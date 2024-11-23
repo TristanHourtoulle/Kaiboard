@@ -15,7 +15,6 @@ export default function Home() {
       if (error) {
         console.error("Error signing out:", error.message);
       } else {
-        console.log("User signed out successfully.");
         router.refresh();
       }
     } catch (err) {
@@ -26,8 +25,6 @@ export default function Home() {
   if (loading) {
     return <p>Loading user information...</p>;
   }
-
-  console.log(user);
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 pt-0">

@@ -143,13 +143,11 @@ export const MeetingCard = (props: MeetingCardProps) => {
 
   const onSubmit = async (values: any) => {
     try {
-      console.log("Data received in onSubmit:", values);
       const newDateTime = combineDateTime(
         values.date,
         values.time,
         values.timezone
       );
-      console.log("New date-time:", newDateTime);
 
       // Appel à l'API Supabase pour mettre à jour la réunion
       const updatedMeeting = await updateMeeting(id, {
@@ -158,8 +156,6 @@ export const MeetingCard = (props: MeetingCardProps) => {
       });
 
       if (updatedMeeting) {
-        console.log("Meeting updated successfully:", updatedMeeting);
-
         // Mettre à jour les champs du formulaire
         form.reset({
           timezone: updatedMeeting.timezone || values.timezone,

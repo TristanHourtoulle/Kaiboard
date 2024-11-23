@@ -80,8 +80,6 @@ export const CreateMeeting = ({
     time: string,
     timezone: string
   ): string => {
-    console.log("date received", date, time, timezone);
-
     if (!date) return new Date().toISOString(); // Par défaut, la date actuelle
 
     // Extraire les composantes de la date locale
@@ -97,7 +95,6 @@ export const CreateMeeting = ({
 
     // Combinez date, heure et fuseau horaire pour retourner une chaîne ISO correcte
     const result = `${dateStr}T${timeStr}:00${formatTimezone(timezone)}`;
-    console.log("result return", result);
 
     return result;
   };

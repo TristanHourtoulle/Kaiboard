@@ -92,7 +92,6 @@ export function AppSidebar() {
 
         // Merge the default Teams with the fetched teams
         setTeams([...Teams, ...formattedTeams]);
-        console.log("User teams fetched: ", formattedTeams);
       });
     }
   }

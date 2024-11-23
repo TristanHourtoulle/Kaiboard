@@ -13,6 +13,7 @@ import {
   SidebarMenuItem,
   SidebarSeparator,
 } from "@/components/ui/sidebar";
+import { useTeam } from "@/hooks/useTeam";
 import { useUser } from "@/hooks/useUser";
 import { supabase } from "@/lib/supabase";
 import {
@@ -21,7 +22,6 @@ import {
   CollapsibleTrigger,
 } from "@radix-ui/react-collapsible";
 import {
-  AudioWaveform,
   Calendar,
   ChevronDown,
   ClipboardList,
@@ -59,16 +59,17 @@ const Teams = [
     logo: GalleryVerticalEnd,
     plan: "Hobby",
   },
-  {
-    name: "Edukai",
-    logo: AudioWaveform,
-    plan: "Startup",
-  },
+  // {
+  //   name: "Edukai",
+  //   logo: AudioWaveform,
+  //   plan: "Startup",
+  // },
 ];
 
 export function AppSidebar() {
   const { user, loading } = useUser();
   const router = useRouter();
+  const { createTeam } = useTeam();
 
   const logout = async () => {
     try {
@@ -86,7 +87,13 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
-        <TeamSwitcher teams={Teams} />
+        {user && user.id && (
+          <TeamSwitcher
+            teams={Teams}
+            createTeam={createTeam}
+            user_id={user.id}
+          />
+        )}
       </SidebarHeader>
       <SidebarSeparator className="my-4" />
       <SidebarContent>

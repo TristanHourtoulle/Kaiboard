@@ -1,8 +1,9 @@
 "use client";
 
 import { useUserMeetings } from "@/hooks/useMeeting";
-import { useUser } from "@/hooks/useUser";
+import { getSavedZones, getUTC, useUser } from "@/hooks/useUser";
 import { splitDateTime } from "@/lib/utils";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import Skeleton from "react-loading-skeleton";
 import { CreateMeeting } from "./CreateMeeting";
@@ -11,7 +12,14 @@ import { MeetingCard } from "./MeetingCard";
 export default function Page() {
   const { user, loading: userLoading } = useUser();
   const [userId, setUserId] = useState<string | null>(null);
+  const [userPreferences, setUserPreferences] = useState({
+    utc: getUTC(),
+    savedUtc: getSavedZones(),
+  });
   const [meetingsList, setMeetingsList] = useState<any[]>([]);
+
+  // Check if UTC settings are missing
+  const hasUtcSettings = userPreferences.utc;
 
   const {
     loading: meetingsLoading,
@@ -50,18 +58,18 @@ export default function Page() {
             Here, you can create some meetings and invite some collaborators.
           </p>
         </div>
-        {!userLoading && user && (
+        {!userLoading && user && hasUtcSettings && (
           <CreateMeeting user={user} onMeetingCreated={loadMeetings} />
         )}
       </div>
 
       {/* Meetings Layout */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="flex flex-wrap gap-4 items-center justify-start w-full">
         {userLoading || meetingsLoading ? (
           <Skeleton count={3} height={150} />
         ) : error ? (
           <p className="text-red-500">Error: {error}</p>
-        ) : meetings.length > 0 ? (
+        ) : meetings.length > 0 && hasUtcSettings ? (
           meetings.map((meeting: any) => {
             const schedule = splitDateTime(meeting.date_time);
             return (
@@ -73,8 +81,29 @@ export default function Page() {
               />
             );
           })
+        ) : !hasUtcSettings ? (
+          // If the user has no UTC settings
+          <div className="text-left w-full">
+            <p className="text-gray-600">
+              You haven't set your personal UTC yet.
+            </p>
+            <div className="flex gap-2 items-center w-full">
+              <p className="text-gray-600 inline">
+                Please go to the <strong>Preferences</strong> section to set
+                your UTC or click here{" "}
+              </p>
+              <Link href="/preference" className="underline">
+                preferences page
+              </Link>
+            </div>
+          </div>
         ) : (
-          <p className="text-gray-500">No meetings found.</p>
+          meetings.length === 0 && (
+            // If there are no meetings
+            <div className="text-center">
+              <p className="text-gray-600">You have no meetings scheduled.</p>
+            </div>
+          )
         )}
       </div>
     </div>

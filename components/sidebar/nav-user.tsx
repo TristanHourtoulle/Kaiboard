@@ -39,7 +39,6 @@ export function NavUser({ user }: { user: any }) {
       if (error) {
         console.error("Error signing out:", error.message);
       } else {
-        console.log("User signed out successfully.");
         router.refresh();
       }
     } catch (err) {

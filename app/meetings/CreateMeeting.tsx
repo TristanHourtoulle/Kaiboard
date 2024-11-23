@@ -5,8 +5,8 @@ import { utcTimezones } from "@/lib/types";
 
 import { useCreateMeeting } from "@/hooks/useMeeting";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { useForm } from "react-hook-form";
+import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -44,10 +44,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { getUTC } from "@/hooks/useUser";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { useState } from "react";
+import { PreviewDateTime } from "./PreviewDateTime";
 
 // Validation schema for all form inputs
 const formSchema = z.object({
@@ -67,6 +69,49 @@ export type CreateMeetingProps = {
 export const CreateMeeting = ({ user }: CreateMeetingProps) => {
   const [date, setDate] = useState<Date | null>(null);
   const { createMeeting, loading, error } = useCreateMeeting();
+
+  const combineDateAndTime = (
+    date: Date | null,
+    time: string,
+    timezone: string
+  ): string => {
+    console.log("date received", date, time, timezone);
+
+    if (!date) return new Date().toISOString(); // Par défaut, la date actuelle
+
+    // Extraire les composantes de la date locale
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, "0"); // Les mois sont indexés à partir de 0
+    const day = date.getDate().toString().padStart(2, "0");
+
+    // Formater la date
+    const dateStr = `${year}-${month}-${day}`;
+
+    // Ajoutez les heures et minutes définies par l'utilisateur
+    const timeStr = time || "00:00"; // Défaut : "00:00" si le champ est vide
+
+    // Combinez date, heure et fuseau horaire pour retourner une chaîne ISO correcte
+    const result = `${dateStr}T${timeStr}:00${formatTimezone(timezone)}`;
+    console.log("result return", result);
+
+    return result;
+  };
+
+  const formatTimezone = (utc: string): string => {
+    // Correspond au format "utc+8" ou "utc-3"
+    const match = utc.match(/utc([+-])(\d+)/i);
+    if (!match) {
+      console.error(`Invalid timezone format: "${utc}"`);
+      return "+00:00"; // Retour par défaut si le format est invalide
+    }
+
+    const [, sign, hours] = match;
+
+    // Vérifiez que hours est défini et ajoutez un zéro devant si nécessaire
+    const paddedHours = hours.padStart(2, "0");
+
+    return `${sign}${paddedHours}:00`;
+  };
 
   const onSubmit = async (data: any) => {
     try {
@@ -111,9 +156,9 @@ export const CreateMeeting = ({ user }: CreateMeetingProps) => {
     defaultValues: {
       title: "",
       description: "",
-      date: null,
-      timezone: "",
-      time: "",
+      date: new Date().toISOString(),
+      timezone: getUTC() || "",
+      time: new Date().toLocaleTimeString().slice(0, 5),
     },
   });
 
@@ -219,7 +264,10 @@ export const CreateMeeting = ({ user }: CreateMeetingProps) => {
                   <FormItem>
                     <FormLabel>Timezone</FormLabel>
                     <FormControl>
-                      <Select onValueChange={field.onChange}>
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
                         <SelectTrigger className="w-full">
                           <SelectValue placeholder="Select a timezone" />
                         </SelectTrigger>
@@ -271,6 +319,18 @@ export const CreateMeeting = ({ user }: CreateMeetingProps) => {
                 )}
               />
             </div>
+            <div className="w-full">
+              <PreviewDateTime
+                dateTime={
+                  combineDateAndTime(
+                    new Date(form.watch("date")),
+                    form.watch("time"),
+                    form.watch("timezone")
+                  ) || new Date().toISOString()
+                }
+              />
+            </div>
+
             <DialogFooter className="mt-4 mb-0">
               <DialogClose asChild>
                 <Button variant="outline" className="mr-auto">

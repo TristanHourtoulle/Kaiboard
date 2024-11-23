@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Textarea } from "@/components/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ChevronsUpDown, Plus } from "lucide-react";
+import { ChevronsUpDown, GalleryVerticalEnd, Plus } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -49,14 +49,12 @@ const formSchema = z.object({
 export function TeamSwitcher({
   teams,
   createTeam,
+  fetchUserTeams,
   user_id,
 }: {
-  teams: {
-    name: string;
-    logo: React.ElementType;
-    plan: string;
-  }[];
+  teams: any[];
   createTeam: (name: string, description: string, user_id: string) => void;
+  fetchUserTeams: () => void;
   user_id: string;
 }) {
   const { isMobile } = useSidebar();
@@ -77,6 +75,7 @@ export function TeamSwitcher({
     try {
       // Call the createTeam function with the form data
       createTeam(data.title, data.description, user_id);
+      fetchUserTeams();
       setIsDialogOpen(false); // Close the dialog
       form.reset(); // Reset the form
     } catch (error) {
@@ -94,13 +93,13 @@ export function TeamSwitcher({
               className="data-[state=open]:bg-accent data-[state=open]:text-accent-foreground"
             >
               <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                <activeTeam.logo className="size-4" />
+                <GalleryVerticalEnd className="size-4" />
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-semibold">
                   {activeTeam.name}
                 </span>
-                <span className="truncate text-xs">{activeTeam.plan}</span>
+                <span className="truncate text-xs">Hobby</span>
               </div>
               <ChevronsUpDown className="ml-auto" />
             </SidebarMenuButton>
@@ -121,7 +120,7 @@ export function TeamSwitcher({
                 className="gap-2 p-2"
               >
                 <div className="flex size-6 items-center justify-center rounded-sm border">
-                  <team.logo className="size-4 shrink-0" />
+                  <GalleryVerticalEnd className="size-4 shrink-0" />
                 </div>
                 {team.name}
               </DropdownMenuItem>

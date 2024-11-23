@@ -26,11 +26,11 @@ import {
   ChevronDown,
   ClipboardList,
   Command,
-  GalleryVerticalEnd,
   PlusCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { ModeToggle } from "../mode-toggle";
 import { NavUser } from "./nav-user";
 import { TeamSwitcher } from "./team-switcher";
@@ -55,21 +55,17 @@ const Links = [
 
 const Teams = [
   {
+    id: -1,
     name: "Personal Workspace",
-    logo: GalleryVerticalEnd,
     plan: "Hobby",
   },
-  // {
-  //   name: "Edukai",
-  //   logo: AudioWaveform,
-  //   plan: "Startup",
-  // },
 ];
 
 export function AppSidebar() {
   const { user, loading } = useUser();
   const router = useRouter();
-  const { createTeam } = useTeam();
+  const { createTeam, getUserTeams } = useTeam();
+  const [teams, setTeams] = useState<any[]>(Teams);
 
   const logout = async () => {
     try {
@@ -84,13 +80,38 @@ export function AppSidebar() {
     }
   };
 
+  // Function to fetch user teams at the launch but also when a teams is created or deleted
+  function fetchUserTeams() {
+    if (user && user.id) {
+      getUserTeams(user.id).then((userTeams) => {
+        // Map over userTeams to extract the `teams` object
+        const formattedTeams = userTeams.map((team) => ({
+          ...team.teams, // Extract the `teams` object properties
+          team_id: team.team_id, // Optionally include the `team_id`
+        }));
+
+        // Merge the default Teams with the fetched teams
+        setTeams([...Teams, ...formattedTeams]);
+        console.log("User teams fetched: ", formattedTeams);
+      });
+    }
+  }
+
+  // Fetch user teams at the launch
+  useEffect(() => {
+    if (user && user.id) {
+      fetchUserTeams();
+    }
+  }, [user]);
+
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
         {user && user.id && (
           <TeamSwitcher
-            teams={Teams}
+            teams={teams}
             createTeam={createTeam}
+            fetchUserTeams={fetchUserTeams}
             user_id={user.id}
           />
         )}

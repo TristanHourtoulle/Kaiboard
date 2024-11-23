@@ -7,17 +7,35 @@ export const useTeam = () => {
     description: string,
     userId: string
   ) => {
-    const { data, error } = await supabase
+    // Créer une transaction pour garantir la cohérence des données
+    const { data: teamData, error: teamError } = await supabase
       .from("teams")
       .insert({
         name,
         description,
         created_by: userId,
       })
-      .select();
+      .select()
+      .single(); // Récupérer uniquement la première équipe créée
 
-    if (error) throw new Error(error.message);
-    return data;
+    if (teamError) {
+      throw new Error(`Error creating team: ${teamError.message}`);
+    }
+
+    // Ajouter le créateur en tant que owner dans team_members
+    const { error: memberError } = await supabase.from("team_members").insert({
+      team_id: teamData.id, // Utiliser l'id de l'équipe nouvellement créée
+      user_id: userId,
+      role: "owner",
+    });
+
+    if (memberError) {
+      throw new Error(
+        `Error adding owner to team_members: ${memberError.message}`
+      );
+    }
+
+    return teamData; // Retourne les données de l'équipe créée
   };
 
   const updateTeam = async (

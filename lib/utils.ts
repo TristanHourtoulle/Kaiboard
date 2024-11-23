@@ -192,3 +192,32 @@ export function updateDateTimeWithUtc(dateTime: string, utc: string): string {
   // Return the updated date-time in the UTC+x timezone
   return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
 }
+
+const convertTimezone = (timezone: string): string => {
+  // Extrait le signe (+ ou -) et le décalage horaire
+  const match = timezone.match(/utc([+-]\d+)/i);
+  if (!match) {
+    throw new Error("Invalid timezone format. Expected 'utc+X' or 'utc-X'.");
+  }
+
+  // Récupère le décalage horaire
+  const offset = parseInt(match[1], 10);
+
+  // Formatage pour correspondre à "+08:00" ou "-03:00"
+  const hours = Math.abs(offset).toString().padStart(2, "0");
+  const formattedTimezone = `${offset >= 0 ? "+" : "-"}${hours}:00`;
+
+  return formattedTimezone;
+};
+
+export const combineDateTime = (date: Date, time: string, timezone: string) => {
+  const dateStr =
+    date.getFullYear().toString().padStart(4, "0") +
+    "-" +
+    (date.getMonth() + 1).toString().padStart(2, "0") +
+    "-" +
+    date.getDate().toString().padStart(2, "0");
+  const timeStr = `${time}:00`;
+  const timezoneStr = convertTimezone(timezone); // Convertit la timezone
+  return `${dateStr}T${timeStr}${timezoneStr}`;
+};

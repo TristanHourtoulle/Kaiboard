@@ -45,7 +45,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { getUTC } from "@/hooks/useUser";
-import { cn } from "@/lib/utils";
+import { cn, combineDateTime } from "@/lib/utils";
 import { format } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { useState } from "react";
@@ -120,20 +120,10 @@ export const CreateMeeting = ({ user }: CreateMeetingProps) => {
         throw new Error("Invalid date format");
       }
 
-      // Combiner date et time
-      const dateTimeString = `${data.date.toISOString().split("T")[0]}T${
-        data.time
-      }:00`; // Ajoutez ":00" pour les secondes
-      const dateTime = new Date(dateTimeString);
-
-      if (isNaN(dateTime.getTime())) {
-        throw new Error("Invalid date-time combination");
-      }
-
       const meetingData = {
         title: data.title,
         description: data.description,
-        date_time: dateTime.toISOString(), // Format ISO pour Supabase
+        date_time: combineDateTime(data.date, data.time, data.timezone), // Format ISO pour Supabase
         timezone: data.timezone,
         participants: [], // Ajoutez des participants si nécessaire
       };

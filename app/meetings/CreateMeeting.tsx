@@ -73,6 +73,7 @@ export const CreateMeeting = ({
 }: CreateMeetingProps) => {
   const [date, setDate] = useState<Date | null>(null);
   const { createMeeting, loading, error } = useCreateMeeting();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const combineDateAndTime = (
     date: Date | null,
@@ -137,6 +138,7 @@ export const CreateMeeting = ({
       if (createdMeeting) {
         form.reset();
         onMeetingCreated();
+        setIsDialogOpen(false);
       } else {
         console.error("Failed to create meeting.");
       }
@@ -158,9 +160,14 @@ export const CreateMeeting = ({
   });
 
   return (
-    <Dialog>
+    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
       <DialogTrigger asChild>
-        <Button className="py-2 max-w-sm ml-auto">Create a meeting</Button>
+        <Button
+          className="py-2 max-w-sm ml-auto"
+          onClick={() => setIsDialogOpen(true)}
+        >
+          Create a meeting
+        </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
@@ -328,7 +335,11 @@ export const CreateMeeting = ({
 
             <DialogFooter className="mt-4 mb-0">
               <DialogClose asChild>
-                <Button variant="outline" className="mr-auto">
+                <Button
+                  variant="outline"
+                  className="mr-auto"
+                  onClick={() => setIsDialogOpen(false)}
+                >
                   Cancel
                 </Button>
               </DialogClose>

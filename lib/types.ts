@@ -275,7 +275,6 @@ export const countryNameRecord = {
 export type CountryCode = keyof typeof countryNameRecord;
 
 export function getCountryFlagEmoji(countryCode: string) {
-  console.log("countryCode", countryCode);
   return countryCode
     .split("")
     .map((letter) => (letter.charCodeAt(0) % 32) + 0x1f1e5)

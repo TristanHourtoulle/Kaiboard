@@ -10,8 +10,6 @@ export async function middleware(req: NextRequest) {
     data: { session },
   } = await supabase.auth.getSession();
 
-  console.log("session", session);
-
   // Exclude login and signup routes from session check
   const { pathname } = req.nextUrl;
   if (pathname === "/login" || pathname === "/signup") {

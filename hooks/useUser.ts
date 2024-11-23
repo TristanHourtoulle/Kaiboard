@@ -34,7 +34,6 @@ export function useUser() {
 
 // Set the UTC received as parameter in a cookie
 export function setUTC(utc: string) {
-  console.log("Setting UTC:", utc);
   document.cookie = `utc=${encodeURIComponent(utc)}; path=/`;
 }
 
@@ -84,4 +83,44 @@ export function getUtcCountry() {
     savedUtc: getUTC(),
     savedCountry: getCountry(),
   };
+}
+
+export type zonesSavedType = {
+  timezone: string;
+  country: string;
+};
+
+// Get a list of { timezone, country } from a cookie named savedZones
+export function getSavedZones(): zonesSavedType[] {
+  const savedZones = document.cookie.replace(
+    /(?:(?:^|.*;\s*)savedZones\s*=\s*([^;]*).*$)|^.*$/,
+    "$1"
+  );
+  return savedZones ? JSON.parse(savedZones) : [];
+}
+
+// Set a list of { timezone, country } in a cookie named savedZones
+export function setSavedZones(zones: zonesSavedType[]) {
+  document.cookie = `savedZones=${JSON.stringify(zones)}; path=/`;
+}
+
+// Remove the savedZones cookie
+export function removeSavedZones() {
+  document.cookie =
+    "savedZones=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+}
+
+// Remove a specific zone from the savedZones cookie
+export function removeZone(zone: zonesSavedType) {
+  const savedZones = getSavedZones();
+  const newZones = savedZones.filter(
+    (z: zonesSavedType) => z.timezone !== zone.timezone
+  );
+  document.cookie = `savedZones=${JSON.stringify(newZones)}; path=/`;
+}
+
+// Remove all zones from the savedZones cookie
+export function removeAllZones() {
+  document.cookie =
+    "savedZones=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
 }

@@ -9,6 +9,7 @@ type MeetingData = {
   participants?: object; // JSON object for participants
 };
 
+// Crée une réunion
 export function useCreateMeeting() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -46,6 +47,7 @@ export function useCreateMeeting() {
   return { createMeeting, loading, error };
 }
 
+// Récupère les réunions d'un utilisateur
 export function useUserMeetings(userId: string) {
   const [loading, setLoading] = useState(false);
   const [meetings, setMeetings] = useState<any[]>([]);
@@ -74,4 +76,70 @@ export function useUserMeetings(userId: string) {
   };
 
   return { loading, meetings, error, fetchMeetings };
+}
+
+// Mettre à jour une réunion
+export function useUpdateMeeting() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const updateMeeting = async (meetingId: string, data: MeetingData) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const { data: meeting, error } = await supabase
+        .from("meetings")
+        .update({
+          title: data.title,
+          description: data.description,
+          date_time: data.date_time,
+          participants: data.participants || null,
+        })
+        .eq("id", meetingId)
+        .select()
+        .single();
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      return meeting;
+    } catch (err: any) {
+      setError(err.message || "An unexpected error occurred.");
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { updateMeeting, loading, error };
+}
+
+// Supprimer une réunion
+export function useDeleteMeeting() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const deleteMeeting = async (meetingId: string) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const { error } = await supabase
+        .from("meetings")
+        .delete()
+        .eq("id", meetingId);
+
+      if (error) {
+        throw new Error(error.message);
+      }
+    } catch (err: any) {
+      setError(err.message || "An unexpected error occurred.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { deleteMeeting, loading, error };
 }

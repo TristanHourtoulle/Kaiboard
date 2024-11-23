@@ -71,7 +71,6 @@ export const CreateMeeting = ({ user }: CreateMeetingProps) => {
   const onSubmit = async (data: any) => {
     try {
       // Vérifiez que data.date est une instance de Date ou une chaîne formatée
-      console.log("Data from zod:", data);
       if (!(data.date instanceof Date)) {
         throw new Error("Invalid date format");
       }
@@ -97,7 +96,6 @@ export const CreateMeeting = ({ user }: CreateMeetingProps) => {
       const createdMeeting = await createMeeting(user.id, meetingData);
 
       if (createdMeeting) {
-        console.log("Meeting created successfully:", createdMeeting);
         form.reset();
       } else {
         console.error("Failed to create meeting.");

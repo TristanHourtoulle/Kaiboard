@@ -56,7 +56,6 @@ export default function Page() {
         ) : meetings.length > 0 ? (
           meetings.map((meeting: any) => {
             const schedule = splitDateTime(meeting.date_time);
-            console.log(schedule); // Optionnel : à garder si vous voulez vérifier dans la console
             return (
               <MeetingCard
                 key={meeting.id}

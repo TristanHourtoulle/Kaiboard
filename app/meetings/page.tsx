@@ -11,6 +11,7 @@ import { MeetingCard } from "./MeetingCard";
 export default function Page() {
   const { user, loading: userLoading } = useUser();
   const [userId, setUserId] = useState<string | null>(null);
+  const [meetingsList, setMeetingsList] = useState<any[]>([]);
 
   const {
     loading: meetingsLoading,
@@ -25,9 +26,14 @@ export default function Page() {
     }
   }, [user, userLoading]);
 
+  const loadMeetings = async () => {
+    fetchMeetings();
+    setMeetingsList(meetings || []);
+  };
+
   useEffect(() => {
     if (userId) {
-      fetchMeetings();
+      loadMeetings();
     }
   }, [userId]);
 
@@ -44,7 +50,9 @@ export default function Page() {
             Here, you can create some meetings and invite some collaborators.
           </p>
         </div>
-        {!userLoading && user && <CreateMeeting user={user} />}
+        {!userLoading && user && (
+          <CreateMeeting user={user} onMeetingCreated={loadMeetings} />
+        )}
       </div>
 
       {/* Meetings Layout */}
@@ -61,6 +69,7 @@ export default function Page() {
                 key={meeting.id}
                 meeting={meeting}
                 shedule={schedule}
+                onMeetingDeleted={loadMeetings}
               />
             );
           })

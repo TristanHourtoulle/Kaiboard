@@ -64,9 +64,13 @@ const formSchema = z.object({
 
 export type CreateMeetingProps = {
   user: any;
+  onMeetingCreated: () => void;
 };
 
-export const CreateMeeting = ({ user }: CreateMeetingProps) => {
+export const CreateMeeting = ({
+  user,
+  onMeetingCreated,
+}: CreateMeetingProps) => {
   const [date, setDate] = useState<Date | null>(null);
   const { createMeeting, loading, error } = useCreateMeeting();
 
@@ -132,6 +136,7 @@ export const CreateMeeting = ({ user }: CreateMeetingProps) => {
 
       if (createdMeeting) {
         form.reset();
+        onMeetingCreated();
       } else {
         console.error("Failed to create meeting.");
       }

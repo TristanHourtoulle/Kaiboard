@@ -82,6 +82,7 @@ export type MeetingCardProps = {
     user_id: string;
   };
   shedule: string[];
+  onMeetingDeleted: () => void;
 };
 
 export const MeetingCard = (props: MeetingCardProps) => {
@@ -94,6 +95,7 @@ export const MeetingCard = (props: MeetingCardProps) => {
     participants,
     user_id,
   } = props.meeting;
+  const { onMeetingDeleted } = props;
   const router = useRouter();
 
   const [meetingShedule, setMeetingShedule] = useState(props.shedule);
@@ -214,9 +216,9 @@ export const MeetingCard = (props: MeetingCardProps) => {
       </CardContent>
       <CardFooter className="flex justify-between w-full">
         <Button
-          onClick={() => {
-            deleteMeeting(id);
-            router.refresh();
+          onClick={async () => {
+            await deleteMeeting(id);
+            onMeetingDeleted();
           }}
           variant="destructive"
         >

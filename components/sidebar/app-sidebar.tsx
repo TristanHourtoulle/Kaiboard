@@ -71,31 +71,24 @@ export function AppSidebar() {
   const { createTeam, getUserTeams } = useTeam();
   const [teams, setTeams] = useState<any[]>(Teams);
   const [selectedTeam, setSelectedTeam] = useState<any>(Teams[0]);
+  const [links, setLinks] = useState(PersonnalLinks);
 
   function updateLinks() {
     if (!user) return;
 
-    console.log("Selected team:", selectedTeam);
-
     if (selectedTeam && selectedTeam.id === -1) {
       // Nous sommes dans l'espace personnel, alors supprimez l'ID de l'équipe des liens
-      PersonnalLinks.forEach((link) => {
-        // Supprime la partie "/team_id" si elle est présente
-        link.href = link.href.replace(/^\/\d+\//, "/");
-      });
-      console.log("Personal workspace");
+      setLinks(PersonnalLinks);
       router.push("/");
     } else if (selectedTeam) {
       // Nous sommes dans une équipe, ajoutez l'ID de l'équipe aux liens
-      PersonnalLinks.forEach((link) => {
-        // Ajoute l'ID de l'équipe si ce n'est pas déjà présent
-        link.href = `/${selectedTeam.team_id}/${link.href.replace("/", "")}`;
-      });
-      console.log("Selected team:", selectedTeam);
+      const TeamLinks = PersonnalLinks.map((link) => ({
+        ...link,
+        href: `/${selectedTeam.team_id}/${link.href.replace("/", "")}`,
+      }));
+      setLinks(TeamLinks);
       router.push(`/${selectedTeam.team_id}`);
     }
-
-    console.log("Links", PersonnalLinks);
   }
 
   // Function to fetch user teams at the launch but also when a teams is created or deleted
@@ -144,7 +137,7 @@ export function AppSidebar() {
           <SidebarGroupLabel>Plateform</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {PersonnalLinks.map(({ href, label, Icon }) => (
+              {links.map(({ href, label, Icon }) => (
                 <SidebarMenuItem key={href}>
                   <SidebarMenuButton asChild>
                     <Link href={href}>

@@ -74,7 +74,6 @@ export function AppSidebar() {
   const [links, setLinks] = useState(PersonnalLinks);
 
   function updateLinks() {
-    console.log("selectedTeam", selectedTeam);
 
     if (selectedTeam && selectedTeam.team_id === -1) {
       // Nous sommes dans l'espace personnel, alors supprimez l'ID de l'équipe des liens

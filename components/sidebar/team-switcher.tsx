@@ -70,32 +70,26 @@ export function TeamSwitcher({
   const setNewActiveTeam = (teams: any[], idTeam: string) => {
     if (idTeam !== undefined && idTeam === "-1") {
       setActiveTeam(teams[0]);
-      console.log("activeTeam", activeTeam);
       setSelectedTeam(teams[0]);
       router.push(`/`);
       return;
     }
     if (idTeam) {
-      console.log("teams", teams);
       const teamFromPath = teams.find(
         (team) => team.team_id === parseInt(idTeam)
       );
 
-      console.log("teamFromPath", teamFromPath);
       if (teamFromPath) {
         setActiveTeam(teamFromPath);
         router.push(`/` + teamFromPath.team_id);
-        console.log("activeTeam", activeTeam);
       } else {
         setActiveTeam(teams[0]);
         router.push(`/`);
-        console.log("activeTeam", activeTeam);
       }
     }
   };
 
   useEffect(() => {
-    console.log("idTeam", idTeam);
     setNewActiveTeam(teams, idTeam);
   }, [idTeam, teams]);
 

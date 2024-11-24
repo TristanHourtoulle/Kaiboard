@@ -95,13 +95,13 @@ export const PersonalInformations = () => {
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="grid gap-2 mt-4 w-full"
+          className="w-full flex items-center justify-between gap-2 flex-wrap"
         >
           <FormField
             control={form.control}
             name="username"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="w-lg">
                 <FormLabel>Username</FormLabel>
                 <FormControl>
                   <Input placeholder="guest#1234" {...field} />
@@ -117,7 +117,7 @@ export const PersonalInformations = () => {
             control={form.control}
             name="name"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="w-lg">
                 <FormLabel>Name</FormLabel>
                 <FormControl>
                   <Input placeholder="Doe" {...field} />
@@ -131,7 +131,7 @@ export const PersonalInformations = () => {
             control={form.control}
             name="firstname"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="w-lg">
                 <FormLabel>Firstname</FormLabel>
                 <FormControl>
                   <Input placeholder="John" {...field} />

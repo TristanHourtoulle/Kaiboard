@@ -17,7 +17,7 @@ export default function Preference() {
         </div>
       </div>
       <div className="flex items-stretch gap-6 w-full flex-wrap lg:flex-nowrap">
-        <div className="flex-1 flex max-w-lg">
+        <div className="flex-1 flex">
           <PersonalInformations />
         </div>
       </div>

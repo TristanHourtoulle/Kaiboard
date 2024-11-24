@@ -51,7 +51,7 @@ const PersonnalLinks = [
     Icon: FolderOpenDot,
   },
   {
-    href: "/settings",
+    href: "/preference",
     label: "Settings",
     Icon: Cog,
   },
@@ -74,21 +74,28 @@ export function AppSidebar() {
 
   function updateLinks() {
     if (!user) return;
+
+    console.log("Selected team:", selectedTeam);
+
     if (selectedTeam && selectedTeam.id === -1) {
-      // We are in the personal workspace, so href will be the classic one, ex: /meetings
+      // Nous sommes dans l'espace personnel, alors supprimez l'ID de l'équipe des liens
       PersonnalLinks.forEach((link) => {
-        link.href = `/${link.href.replace("/", "")}`;
+        // Supprime la partie "/team_id" si elle est présente
+        link.href = link.href.replace(/^\/\d+\//, "/");
       });
       console.log("Personal workspace");
       router.push("/");
     } else if (selectedTeam) {
-      // We are in a team, so href will be /team_id/meetings
+      // Nous sommes dans une équipe, ajoutez l'ID de l'équipe aux liens
       PersonnalLinks.forEach((link) => {
+        // Ajoute l'ID de l'équipe si ce n'est pas déjà présent
         link.href = `/${selectedTeam.team_id}/${link.href.replace("/", "")}`;
       });
       console.log("Selected team:", selectedTeam);
       router.push(`/${selectedTeam.team_id}`);
     }
+
+    console.log("Links", PersonnalLinks);
   }
 
   // Function to fetch user teams at the launch but also when a teams is created or deleted

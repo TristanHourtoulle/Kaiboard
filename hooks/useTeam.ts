@@ -46,7 +46,8 @@ export const useTeam = () => {
       .from("teams")
       .update(updatedFields)
       .eq("id", teamId)
-      .select();
+      .select()
+      .single();
 
     if (error) throw new Error(error.message);
     return data;
@@ -98,6 +99,39 @@ export const useTeam = () => {
     return data;
   };
 
+  // add teamMember by received an email in parameter so we need to get the user_id from the email
+  const addTeamMemberByEmail = async (
+    teamId: string,
+    email: string,
+    role: "owner" | "admin" | "member" = "member"
+  ) => {
+    const { data: userData, error: userError } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("email", email)
+      .single();
+
+    if (userError) {
+      throw new Error(`Error fetching user: ${userError.message}`);
+    }
+
+    if (!userData) {
+      throw new Error("User not found");
+    }
+
+    const { data, error } = await supabase
+      .from("team_members")
+      .insert({
+        team_id: teamId,
+        user_id: userData.id,
+        role,
+      })
+      .select();
+
+    if (error) throw new Error(error.message);
+    return data;
+  };
+
   const removeTeamMember = async (teamId: string, userId: string) => {
     const { error } = await supabase
       .from("team_members")
@@ -139,6 +173,7 @@ export const useTeam = () => {
     deleteTeam,
     getUserTeams,
     addTeamMember,
+    addTeamMemberByEmail,
     removeTeamMember,
     getTeamMembers,
     getTeamById,

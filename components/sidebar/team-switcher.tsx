@@ -26,6 +26,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ChevronsUpDown, GalleryVerticalEnd, Plus } from "lucide-react";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -59,9 +60,44 @@ export function TeamSwitcher({
   setSelectedTeam: (team: any) => void;
   user_id: string;
 }) {
+  const router = useRouter();
   const { isMobile } = useSidebar();
   const [activeTeam, setActiveTeam] = useState(teams[0]);
   const [isDialogOpen, setIsDialogOpen] = useState(false); // State to manage dialog
+  const params = useParams();
+  const [idTeam, setIdTeam] = useState<string>(params.idTeam as string);
+
+  const setNewActiveTeam = (teams: any[], idTeam: string) => {
+    if (idTeam !== undefined && idTeam === "-1") {
+      setActiveTeam(teams[0]);
+      console.log("activeTeam", activeTeam);
+      setSelectedTeam(teams[0]);
+      router.push(`/`);
+      return;
+    }
+    if (idTeam) {
+      console.log("teams", teams);
+      const teamFromPath = teams.find(
+        (team) => team.team_id === parseInt(idTeam)
+      );
+
+      console.log("teamFromPath", teamFromPath);
+      if (teamFromPath) {
+        setActiveTeam(teamFromPath);
+        router.push(`/` + teamFromPath.team_id);
+        console.log("activeTeam", activeTeam);
+      } else {
+        setActiveTeam(teams[0]);
+        router.push(`/`);
+        console.log("activeTeam", activeTeam);
+      }
+    }
+  };
+
+  useEffect(() => {
+    console.log("idTeam", idTeam);
+    setNewActiveTeam(teams, idTeam);
+  }, [idTeam, teams]);
 
   // Initialize the form using react-hook-form and zod
   const form = useForm({
@@ -122,7 +158,9 @@ export function TeamSwitcher({
             {teams.map((team, index) => (
               <DropdownMenuItem
                 key={team.name}
-                onClick={() => setActiveTeam(team)}
+                onClick={() => {
+                  setNewActiveTeam(teams, team.team_id.toString());
+                }}
                 className="gap-2 p-2"
               >
                 <div className="flex size-6 items-center justify-center rounded-sm border">

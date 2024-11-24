@@ -59,7 +59,7 @@ const PersonnalLinks = [
 
 const Teams = [
   {
-    id: -1,
+    team_id: -1,
     name: "Personal Workspace",
     plan: "Hobby",
   },
@@ -74,9 +74,9 @@ export function AppSidebar() {
   const [links, setLinks] = useState(PersonnalLinks);
 
   function updateLinks() {
-    if (!user) return;
+    console.log("selectedTeam", selectedTeam);
 
-    if (selectedTeam && selectedTeam.id === -1) {
+    if (selectedTeam && selectedTeam.team_id === -1) {
       // Nous sommes dans l'espace personnel, alors supprimez l'ID de l'équipe des liens
       setLinks(PersonnalLinks);
       router.push("/");

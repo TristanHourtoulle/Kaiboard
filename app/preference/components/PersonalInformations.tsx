@@ -11,6 +11,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
 import { useProfile } from "@/hooks/useProfile";
 import { useUser } from "@/hooks/useUser";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -34,6 +35,7 @@ export const PersonalInformations = () => {
   const [profile, setProfile] = useState<any>(null);
   const { user, loading: userLoading } = useUser();
   const [userId, setUserId] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const fetchProfile = async (userId: string) => {
     try {
@@ -67,18 +69,20 @@ export const PersonalInformations = () => {
 
   const onSubmit = async (data: any) => {
     console.log(data);
-    // Update profile with submitted data
     if (profile && userId) {
       try {
         await updateProfile(userId, data);
         console.log("Profile updated successfully.");
 
-        // Update local profile state
         const updatedProfile = {
           ...profile,
           ...data,
         };
         setProfile(updatedProfile);
+        toast({
+          title: "Updating profile",
+          description: "Profile updated successfully.",
+        });
       } catch (error: any) {
         console.error("Error updating profile:", error.message);
       }

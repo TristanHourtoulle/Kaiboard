@@ -13,29 +13,23 @@ import {
   SidebarMenuItem,
   SidebarSeparator,
 } from "@/components/ui/sidebar";
+import { useTeam } from "@/hooks/useTeam";
 import { useUser } from "@/hooks/useUser";
-import { supabase } from "@/lib/supabase";
 import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@radix-ui/react-collapsible";
-import {
-  AudioWaveform,
   Calendar,
-  ChevronDown,
   ClipboardList,
+  Cog,
   Command,
-  GalleryVerticalEnd,
-  PlusCircle,
+  FolderOpenDot,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { ModeToggle } from "../mode-toggle";
 import { NavUser } from "./nav-user";
 import { TeamSwitcher } from "./team-switcher";
 
-const Links = [
+const PersonnalLinks = [
   {
     href: "/",
     label: "Dashboard",
@@ -51,42 +45,90 @@ const Links = [
     label: "Tasks",
     Icon: ClipboardList,
   },
+  {
+    href: "/projects",
+    label: "Projects",
+    Icon: FolderOpenDot,
+  },
+  {
+    href: "/preference",
+    label: "Settings",
+    Icon: Cog,
+  },
 ];
 
 const Teams = [
   {
+    team_id: -1,
     name: "Personal Workspace",
-    logo: GalleryVerticalEnd,
     plan: "Hobby",
-  },
-  {
-    name: "Edukai",
-    logo: AudioWaveform,
-    plan: "Startup",
   },
 ];
 
 export function AppSidebar() {
   const { user, loading } = useUser();
   const router = useRouter();
+  const { createTeam, getUserTeams } = useTeam();
+  const [teams, setTeams] = useState<any[]>(Teams);
+  const [selectedTeam, setSelectedTeam] = useState<any>(Teams[0]);
+  const [links, setLinks] = useState(PersonnalLinks);
 
-  const logout = async () => {
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        console.error("Error signing out:", error.message);
-      } else {
-        router.refresh();
-      }
-    } catch (err) {
-      console.error("Unexpected error during logout:", err);
+  function updateLinks() {
+
+    if (selectedTeam && selectedTeam.team_id === -1) {
+      // Nous sommes dans l'espace personnel, alors supprimez l'ID de l'équipe des liens
+      setLinks(PersonnalLinks);
+      router.push("/");
+    } else if (selectedTeam) {
+      // Nous sommes dans une équipe, ajoutez l'ID de l'équipe aux liens
+      const TeamLinks = PersonnalLinks.map((link) => ({
+        ...link,
+        href: `/${selectedTeam.team_id}/${link.href.replace("/", "")}`,
+      }));
+      setLinks(TeamLinks);
+      router.push(`/${selectedTeam.team_id}`);
     }
-  };
+  }
+
+  // Function to fetch user teams at the launch but also when a teams is created or deleted
+  function fetchUserTeams() {
+    if (user && user.id) {
+      getUserTeams(user.id).then((userTeams) => {
+        // Map over userTeams to extract the `teams` object
+        const formattedTeams = userTeams.map((team) => ({
+          ...team.teams, // Extract the `teams` object properties
+          team_id: team.team_id, // Optionally include the `team_id`
+        }));
+
+        // Merge the default Teams with the fetched teams
+        setTeams([...Teams, ...formattedTeams]);
+      });
+    }
+  }
+
+  useEffect(() => {
+    updateLinks();
+  }, [selectedTeam]);
+
+  // Fetch user teams at the launch
+  useEffect(() => {
+    if (user && user.id) {
+      fetchUserTeams();
+    }
+  }, [user]);
 
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
-        <TeamSwitcher teams={Teams} />
+        {user && user.id && (
+          <TeamSwitcher
+            teams={teams}
+            createTeam={createTeam}
+            fetchUserTeams={fetchUserTeams}
+            setSelectedTeam={setSelectedTeam}
+            user_id={user.id}
+          />
+        )}
       </SidebarHeader>
       <SidebarSeparator className="my-4" />
       <SidebarContent>
@@ -94,7 +136,7 @@ export function AppSidebar() {
           <SidebarGroupLabel>Plateform</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {Links.map(({ href, label, Icon }) => (
+              {links.map(({ href, label, Icon }) => (
                 <SidebarMenuItem key={href}>
                   <SidebarMenuButton asChild>
                     <Link href={href}>
@@ -107,35 +149,6 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-
-        <Collapsible defaultOpen className="group/collapsible">
-          <SidebarGroup>
-            <SidebarGroupLabel asChild>
-              <CollapsibleTrigger>
-                Projects
-                <ChevronDown className="ml-auto -rotate-90 transition-transform transform group-data-[state=open]/collapsible:-rotate-[90]" />
-              </CollapsibleTrigger>
-            </SidebarGroupLabel>
-            <CollapsibleContent>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton asChild>Project 1</SidebarMenuButton>
-                  </SidebarMenuItem>
-                  {/* Create a project */}
-                  <SidebarMenuItem>
-                    <SidebarMenuButton asChild>
-                      <Link href="#" className="hover-bg-opacity">
-                        <PlusCircle />
-                        Create a project
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </CollapsibleContent>
-          </SidebarGroup>
-        </Collapsible>
       </SidebarContent>
       <SidebarFooter>
         <ModeToggle />

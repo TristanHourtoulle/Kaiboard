@@ -1,5 +1,6 @@
 "use client";
 
+import { PersonalInformations } from "./components/PersonalInformations";
 import { PreviewOtherCountryDate } from "./components/PreviewOtherCountryDate";
 import { TimezoneCountryForm } from "./components/TimezoneCountryForm";
 
@@ -13,6 +14,11 @@ export default function Preference() {
         </div>
         <div className="flex-1 flex">
           <PreviewOtherCountryDate />
+        </div>
+      </div>
+      <div className="flex items-stretch gap-6 w-full flex-wrap lg:flex-nowrap">
+        <div className="flex-1 flex">
+          <PersonalInformations />
         </div>
       </div>
     </div>

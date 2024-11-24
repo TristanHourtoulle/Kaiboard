@@ -34,12 +34,12 @@ import {
 import { countryNameRecord, utcTimezones } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Check, ChevronsUpDown, X } from "lucide-react";
-
+import { useToast } from "@/hooks/use-toast";
 import { getSavedZones, setSavedZones, zonesSavedType } from "@/hooks/useUser";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { useForm } from "react-hook-form";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
 // Form content => timezone & country
 const formSchema = z.object({
@@ -48,6 +48,7 @@ const formSchema = z.object({
 });
 
 export const PreviewOtherCountryDate = () => {
+  const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [zonesSaved, setZonesSaved] = useState<zonesSavedType[]>(
     getSavedZones()
@@ -64,6 +65,12 @@ export const PreviewOtherCountryDate = () => {
     setZonesSaved((prev) => [...prev, values]);
     setSavedZones([...zonesSaved, values]);
     form.reset();
+    toast({
+      title: "Add country",
+      description: `The country ${
+        countryNameRecord[values.country as keyof typeof countryNameRecord]
+      } was added.`,
+    });
   };
 
   return (

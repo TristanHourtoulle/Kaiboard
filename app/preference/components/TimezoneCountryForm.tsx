@@ -31,6 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
 import { getUtcCountry, updateUtcCountry } from "@/hooks/useUser";
 import { countryNameRecord, utcTimezones } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -48,6 +49,7 @@ const formSchema = z.object({
 
 export const TimezoneCountryForm = () => {
   const { savedUtc, savedCountry } = getUtcCountry();
+  const { toast } = useToast();
   const [open, setOpen] = useState(false);
 
   const form = useForm({
@@ -60,6 +62,10 @@ export const TimezoneCountryForm = () => {
 
   const onSubmit = async (values: any) => {
     updateUtcCountry(values.timezone, values.country);
+    toast({
+      title: "Updating your timezone and country",
+      description: "Your timezone and country have been saved.",
+    });
   };
 
   return (

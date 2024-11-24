@@ -1,6 +1,8 @@
 "use client";
 
-import { useUserMeetings } from "@/hooks/useMeeting";
+import { useProfile } from "@/hooks/useProfile";
+import { useTeam } from "@/hooks/useTeam";
+import { TeamMeetingType, useTeamMeeting } from "@/hooks/useTeamMeeting";
 import { getSavedZones, getUTC, useUser } from "@/hooks/useUser";
 import { splitDateTime } from "@/lib/utils";
 import Link from "next/link";
@@ -9,41 +11,63 @@ import Skeleton from "react-loading-skeleton";
 import { CreateMeeting } from "./CreateMeeting";
 import { MeetingCard } from "./MeetingCard";
 
-export default function Page() {
-  const { user, loading: userLoading } = useUser();
-  const [userId, setUserId] = useState<string | null>(null);
+export default function TeamMeeting({
+  params: { idTeam },
+}: {
+  params: { idTeam: string };
+}) {
+  const { createTeamMeeting, getTeamMeetings } = useTeamMeeting();
+  const [teamMeetings, setTeamMeetings] = useState<TeamMeetingType[]>([]);
+  const { getProfile } = useProfile();
+  const [profile, setProfile] = useState<any>(null);
+  const { user, loading } = useUser();
   const [userPreferences, setUserPreferences] = useState({
     utc: getUTC(),
     savedUtc: getSavedZones(),
   });
-  const [meetingsList, setMeetingsList] = useState<any[]>([]);
-
-  // Check if UTC settings are missing
   const hasUtcSettings = userPreferences.utc;
+  const { getTeamById } = useTeam();
+  const [team, setTeam] = useState<any>(null);
 
-  const {
-    loading: meetingsLoading,
-    meetings,
-    error,
-    fetchMeetings,
-  } = useUserMeetings(userId || "");
-
-  useEffect(() => {
-    if (!userLoading && user?.id && !userId) {
-      setUserId(user.id);
+  const fetchProfile = async (userId: string) => {
+    try {
+      const profile = await getProfile(userId);
+      setProfile(profile);
+    } catch (error: any) {
+      console.error("Error fetching profile:", error.message);
     }
-  }, [user, userLoading]);
-
-  const loadMeetings = async () => {
-    fetchMeetings();
-    setMeetingsList(meetings || []);
   };
 
   useEffect(() => {
-    if (userId) {
-      loadMeetings();
+    // Fetch team meetings
+    getTeamMeetings(idTeam).then((meetings) => {
+      setTeamMeetings(meetings);
+    });
+  }, [idTeam]);
+
+  // fetch profile when user is loaded
+  useEffect(() => {
+    if (!loading && user?.id) {
+      fetchProfile(user.id);
+      // Fetch team data
+      getTeamById(idTeam, user.id).then((data: any) => {
+        //TODO: Handle if the team is not found => user is not a member of the team
+        setTeam(data[0].teams);
+      });
     }
-  }, [userId]);
+  }, [user, loading]);
+
+  const fetchMeetings = async () => {
+    if (!idTeam) return;
+    getTeamMeetings(idTeam).then((meetings) => {
+      setTeamMeetings(meetings);
+    });
+  };
+
+  const loadMeetings = async () => {
+    fetchMeetings();
+    setTeamMeetings(teamMeetings || []);
+  };
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 pt-0 w-full">
@@ -51,28 +75,31 @@ export default function Page() {
       <div className="flex items-center w-full mb-6">
         <div className="flex flex-col gap-1 items-start">
           <h1 className="text-2xl font-semibold">
-            This is the meetings page,{" "}
-            {!userLoading ? user?.user_metadata?.firstname : <Skeleton />}
+            This is the meetings page of {team ? team.name : <Skeleton />},{" "}
+            {!loading && profile ? profile.username : <Skeleton />}
           </h1>
           <p className="text-white text-opacity-75 text-md">
             Here, you can create some meetings and invite some collaborators.
           </p>
         </div>
-        {!userLoading && user && hasUtcSettings && (
-          <CreateMeeting user={user} onMeetingCreated={loadMeetings} />
+        {!loading && user && profile && idTeam && (
+          <CreateMeeting
+            user={user}
+            onMeetingCreated={loadMeetings}
+            teamId={idTeam}
+          />
         )}
       </div>
 
       {/* Meetings Layout */}
       <div className="flex flex-wrap gap-4 items-center justify-start w-full">
-        {userLoading || meetingsLoading ? (
+        {loading ? (
           <Skeleton count={3} height={150} />
-        ) : error ? (
-          <p className="text-red-500">Error: {error}</p>
-        ) : meetings.length > 0 && hasUtcSettings ? (
-          meetings.map((meeting: any) => {
+        ) : teamMeetings.length > 0 && hasUtcSettings ? (
+          teamMeetings.map((meeting: any) => {
             const schedule = splitDateTime(meeting.date_time);
             return (
+              // <p>{meeting.title}</p>
               <MeetingCard
                 key={meeting.id}
                 meeting={meeting}
@@ -98,7 +125,7 @@ export default function Page() {
             </div>
           </div>
         ) : (
-          meetings.length === 0 && (
+          teamMeetings.length === 0 && (
             // If there are no meetings
             <div className="text-center">
               <p className="text-gray-600">You have no meetings scheduled.</p>

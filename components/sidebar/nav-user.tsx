@@ -39,7 +39,7 @@ export function NavUser({ user }: { user: any }) {
       if (error) {
         console.error("Error signing out:", error.message);
       } else {
-        router.refresh();
+        window.location.href = "/";
       }
     } catch (err) {
       console.error("Unexpected error during logout:", err);

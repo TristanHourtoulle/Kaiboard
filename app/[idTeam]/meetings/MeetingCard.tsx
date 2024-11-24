@@ -44,7 +44,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
-import { useDeleteMeeting, useUpdateMeeting } from "@/hooks/useMeeting";
+import { useTeamMeeting } from "@/hooks/useTeamMeeting";
 import { getUTC } from "@/hooks/useUser";
 import { utcTimezones } from "@/lib/types";
 import {
@@ -57,7 +57,6 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import { CalendarClock, CalendarIcon, Clock } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -78,29 +77,19 @@ export type MeetingCardProps = {
     date_time: string;
     title: string;
     description: string;
-    participants: string[];
-    user_id: string;
+    team_id: string;
   };
   shedule: string[];
   onMeetingDeleted: () => void;
 };
 
 export const MeetingCard = (props: MeetingCardProps) => {
-  const {
-    id,
-    created_at,
-    date_time,
-    title,
-    description,
-    participants,
-    user_id,
-  } = props.meeting;
+  const { id, created_at, date_time, title, description, team_id } =
+    props.meeting;
   const { onMeetingDeleted } = props;
-  const router = useRouter();
 
   const [meetingShedule, setMeetingShedule] = useState(props.shedule);
-  const { updateMeeting, loading, error } = useUpdateMeeting();
-  const { deleteMeeting } = useDeleteMeeting();
+  const { updateTeamMeeting, deleteTeamMeeting } = useTeamMeeting();
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -150,9 +139,10 @@ export const MeetingCard = (props: MeetingCardProps) => {
       );
 
       // Appel à l'API Supabase pour mettre à jour la réunion
-      const updatedMeeting = await updateMeeting(id, {
+      const updatedMeeting = await updateTeamMeeting({
         ...values,
         date_time: newDateTime, // Envoi en UTC
+        id: id,
       });
 
       if (updatedMeeting) {
@@ -213,7 +203,7 @@ export const MeetingCard = (props: MeetingCardProps) => {
       <CardFooter className="flex justify-between w-full">
         <Button
           onClick={async () => {
-            await deleteMeeting(id);
+            await deleteTeamMeeting(id);
             onMeetingDeleted();
           }}
           variant="destructive"

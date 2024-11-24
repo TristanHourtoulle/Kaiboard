@@ -3,7 +3,8 @@
 // Create a variable for all possibles UTC timezones in Earth with their respective offsets
 import { utcTimezones } from "@/lib/types";
 
-import { useCreateMeeting } from "@/hooks/useMeeting";
+import { useToast } from "@/hooks/use-toast";
+import { useTeamMeeting } from "@/hooks/useTeamMeeting";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -65,15 +66,18 @@ const formSchema = z.object({
 export type CreateMeetingProps = {
   user: any;
   onMeetingCreated: () => void;
+  teamId: string;
 };
 
 export const CreateMeeting = ({
   user,
   onMeetingCreated,
+  teamId,
 }: CreateMeetingProps) => {
   const [date, setDate] = useState<Date | null>(null);
-  const { createMeeting, loading, error } = useCreateMeeting();
+  const { createTeamMeeting } = useTeamMeeting();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { toast } = useToast();
 
   const combineDateAndTime = (
     date: Date | null,
@@ -126,16 +130,19 @@ export const CreateMeeting = ({
         title: data.title,
         description: data.description,
         date_time: combineDateTime(data.date, data.time, data.timezone), // Format ISO pour Supabase
-        timezone: data.timezone,
-        participants: [], // Ajoutez des participants si nécessaire
+        team_id: teamId,
       };
 
-      const createdMeeting = await createMeeting(user.id, meetingData);
+      const createdMeeting = await createTeamMeeting(meetingData);
 
       if (createdMeeting) {
         form.reset();
         onMeetingCreated();
         setIsDialogOpen(false);
+        toast({
+          title: "Meeting created",
+          description: "Your meeting has been created successfully.",
+        });
       } else {
         console.error("Failed to create meeting.");
       }

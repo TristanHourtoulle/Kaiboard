@@ -1,5 +1,6 @@
 "use client";
 
+import { useProfile } from "@/hooks/useProfile";
 import { useTeam } from "@/hooks/useTeam";
 import { useUser } from "@/hooks/useUser";
 import { memberType } from "@/lib/types";
@@ -18,7 +19,10 @@ export default function TeamHome({
   params: { idTeam: string };
 }) {
   const router = useRouter();
+  const { getProfile } = useProfile();
+  const [profile, setProfile] = useState<any>(null);
   const { user, loading } = useUser();
+  const [userId, setUserId] = useState<string | null>(null);
   const { getTeamById, getTeamMembers } = useTeam();
   const [team, setTeam] = useState<any>(null);
   const [member, setMember] = useState<memberType>({
@@ -28,6 +32,15 @@ export default function TeamHome({
     id_user: "",
   });
   const [allMembers, setAllMembers] = useState<any[]>([]);
+
+  const fetchProfile = async (userId: string) => {
+    try {
+      const profile = await getProfile(userId);
+      setProfile(profile);
+    } catch (error: any) {
+      console.error("Error fetching profile:", error.message);
+    }
+  };
 
   // Ensure the `useEffect` hook is always called
   useEffect(() => {
@@ -47,22 +60,21 @@ export default function TeamHome({
             console.log("All members:", members);
             setAllMembers(members);
           });
-          console.log("Team data:", data);
+          fetchProfile(user.id);
         }
       });
     }
   }, [user]);
 
   // Early return for loading state
-  if (loading) {
+  if (loading || !user || !profile || !team) {
     return <p>Loading user information...</p>;
   }
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
       <h1 className="text-2xl font-semibold">
-        Welcome in {team ? team.name : "the team"},{" "}
-        {user.user_metadata?.firstname}
+        Welcome in {team ? team.name : "the team"}, {profile.username}!
       </h1>
       <div className="grid auto-rows-min gap-4 md:grid-cols-3">
         <div className="aspect-video rounded-xl bg-muted/50" />

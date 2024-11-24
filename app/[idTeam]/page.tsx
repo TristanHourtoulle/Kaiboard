@@ -57,7 +57,6 @@ export default function TeamHome({
             id_user: user.id,
           });
           getTeamMembers(idTeam).then((members: any) => {
-            console.log("All members:", members);
             setAllMembers(members);
           });
           fetchProfile(user.id);

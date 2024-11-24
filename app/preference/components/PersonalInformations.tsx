@@ -68,11 +68,9 @@ export const PersonalInformations = () => {
   });
 
   const onSubmit = async (data: any) => {
-    console.log(data);
     if (profile && userId) {
       try {
         await updateProfile(userId, data);
-        console.log("Profile updated successfully.");
 
         const updatedProfile = {
           ...profile,

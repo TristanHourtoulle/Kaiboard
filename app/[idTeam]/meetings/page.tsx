@@ -41,7 +41,6 @@ export default function TeamMeeting({
   useEffect(() => {
     // Fetch team meetings
     getTeamMeetings(idTeam).then((meetings) => {
-      console.log("Team meetings:", meetings);
       setTeamMeetings(meetings);
     });
   }, [idTeam]);
@@ -52,7 +51,6 @@ export default function TeamMeeting({
       fetchProfile(user.id);
       // Fetch team data
       getTeamById(idTeam, user.id).then((data: any) => {
-        console.log("Team data:", data);
         //TODO: Handle if the team is not found => user is not a member of the team
         setTeam(data[0].teams);
       });
@@ -62,7 +60,6 @@ export default function TeamMeeting({
   const fetchMeetings = async () => {
     if (!idTeam) return;
     getTeamMeetings(idTeam).then((meetings) => {
-      console.log("Team meetings:", meetings);
       setTeamMeetings(meetings);
     });
   };
@@ -101,7 +98,6 @@ export default function TeamMeeting({
         ) : teamMeetings.length > 0 && hasUtcSettings ? (
           teamMeetings.map((meeting: any) => {
             const schedule = splitDateTime(meeting.date_time);
-            console.log("Meeting:", meeting);
             return (
               // <p>{meeting.title}</p>
               <MeetingCard

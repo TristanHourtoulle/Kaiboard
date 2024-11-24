@@ -138,8 +138,6 @@ export const MeetingCard = (props: MeetingCardProps) => {
         values.timezone
       );
 
-      console.log("Data in on submit", values);
-      console.log("New date time", newDateTime);
       // Appel à l'API Supabase pour mettre à jour la réunion
       const updatedMeeting = await updateTeamMeeting({
         ...values,

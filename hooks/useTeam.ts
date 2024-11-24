@@ -109,8 +109,6 @@ export const useTeam = () => {
   };
 
   const getTeamMembers = async (teamId: string) => {
-    console.log("Getting members for team:", teamId);
-
     const { data, error } = await supabase
       .from("team_members")
       .select(
@@ -131,8 +129,6 @@ export const useTeam = () => {
       console.error("Error fetching team members:", error.message);
       throw new Error(error.message);
     }
-
-    console.log("Members data:", data);
 
     return data;
   };

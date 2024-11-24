@@ -118,7 +118,6 @@ export function TeamSwitcher({
   useEffect(() => {
     setSelectedTeam(activeTeam);
   }, [activeTeam]);
-
   return (
     <SidebarMenu>
       <SidebarMenuItem>

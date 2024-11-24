@@ -34,7 +34,6 @@ import {
 import { countryNameRecord, utcTimezones } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Check, ChevronsUpDown, X } from "lucide-react";
-
 import { useToast } from "@/hooks/use-toast";
 import { getSavedZones, setSavedZones, zonesSavedType } from "@/hooks/useUser";
 import { zodResolver } from "@hookform/resolvers/zod";

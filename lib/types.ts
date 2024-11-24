@@ -281,3 +281,20 @@ export function getCountryFlagEmoji(countryCode: string) {
     .map((n) => String.fromCodePoint(n))
     .join("");
 }
+
+export type memberType = {
+  id_team: string;
+  id_user: string;
+  role: string;
+  join_at: string;
+};
+
+export type allMembersType = [
+  {
+    user_id: string;
+    role: string;
+    name: string;
+    firstname: string;
+    email: string;
+  }
+];

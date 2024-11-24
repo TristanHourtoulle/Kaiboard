@@ -47,7 +47,7 @@ export default function Login() {
       if (error) {
         setError(error.message);
       } else if (data) {
-        router.push("/");
+        router.refresh();
       }
     } catch {
       setError("An unexpected error occurred. Please try again.");

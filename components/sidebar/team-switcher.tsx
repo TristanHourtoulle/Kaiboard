@@ -26,7 +26,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ChevronsUpDown, GalleryVerticalEnd, Plus } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "../ui/button";
@@ -51,10 +51,12 @@ export function TeamSwitcher({
   createTeam,
   fetchUserTeams,
   user_id,
+  setSelectedTeam,
 }: {
   teams: any[];
   createTeam: (name: string, description: string, user_id: string) => void;
   fetchUserTeams: () => void;
+  setSelectedTeam: (team: any) => void;
   user_id: string;
 }) {
   const { isMobile } = useSidebar();
@@ -82,6 +84,10 @@ export function TeamSwitcher({
       console.error(error); // Log any errors
     }
   };
+
+  useEffect(() => {
+    setSelectedTeam(activeTeam);
+  }, [activeTeam]);
 
   return (
     <SidebarMenu>

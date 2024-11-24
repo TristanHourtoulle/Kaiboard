@@ -68,6 +68,17 @@ export const useTeam = () => {
     return data;
   };
 
+  const getTeamById = async (teamId: string, userId: string) => {
+    const { data, error } = await supabase
+      .from("team_members")
+      .select("team_id, role, join_at, teams(name, description)")
+      .eq("team_id", teamId)
+      .eq("user_id", userId);
+
+    if (error) throw new Error(error.message);
+    return data;
+  };
+
   // Gestion des membres d'une équipe
   const addTeamMember = async (
     teamId: string,
@@ -98,12 +109,31 @@ export const useTeam = () => {
   };
 
   const getTeamMembers = async (teamId: string) => {
+    console.log("Getting members for team:", teamId);
+
     const { data, error } = await supabase
       .from("team_members")
-      .select("user_id, role, users(username, email)")
+      .select(
+        `
+        user_id,
+        role,
+        profiles (
+          name,
+          firstname,
+          email,
+          id
+        )
+      `
+      )
       .eq("team_id", teamId);
 
-    if (error) throw new Error(error.message);
+    if (error) {
+      console.error("Error fetching team members:", error.message);
+      throw new Error(error.message);
+    }
+
+    console.log("Members data:", data);
+
     return data;
   };
 
@@ -115,5 +145,6 @@ export const useTeam = () => {
     addTeamMember,
     removeTeamMember,
     getTeamMembers,
+    getTeamById,
   };
 };

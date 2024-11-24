@@ -15,18 +15,12 @@ import {
 } from "@/components/ui/sidebar";
 import { useTeam } from "@/hooks/useTeam";
 import { useUser } from "@/hooks/useUser";
-import { supabase } from "@/lib/supabase";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@radix-ui/react-collapsible";
 import {
   Calendar,
-  ChevronDown,
   ClipboardList,
+  Cog,
   Command,
-  PlusCircle,
+  FolderOpenDot,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -35,7 +29,7 @@ import { ModeToggle } from "../mode-toggle";
 import { NavUser } from "./nav-user";
 import { TeamSwitcher } from "./team-switcher";
 
-const Links = [
+const PersonnalLinks = [
   {
     href: "/",
     label: "Dashboard",
@@ -50,6 +44,16 @@ const Links = [
     href: "/tasks",
     label: "Tasks",
     Icon: ClipboardList,
+  },
+  {
+    href: "/projects",
+    label: "Projects",
+    Icon: FolderOpenDot,
+  },
+  {
+    href: "/settings",
+    label: "Settings",
+    Icon: Cog,
   },
 ];
 
@@ -66,19 +70,26 @@ export function AppSidebar() {
   const router = useRouter();
   const { createTeam, getUserTeams } = useTeam();
   const [teams, setTeams] = useState<any[]>(Teams);
+  const [selectedTeam, setSelectedTeam] = useState<any>(Teams[0]);
 
-  const logout = async () => {
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        console.error("Error signing out:", error.message);
-      } else {
-        router.refresh();
-      }
-    } catch (err) {
-      console.error("Unexpected error during logout:", err);
+  function updateLinks() {
+    if (!user) return;
+    if (selectedTeam && selectedTeam.id === -1) {
+      // We are in the personal workspace, so href will be the classic one, ex: /meetings
+      PersonnalLinks.forEach((link) => {
+        link.href = `/${link.href.replace("/", "")}`;
+      });
+      console.log("Personal workspace");
+      router.push("/");
+    } else if (selectedTeam) {
+      // We are in a team, so href will be /team_id/meetings
+      PersonnalLinks.forEach((link) => {
+        link.href = `/${selectedTeam.team_id}/${link.href.replace("/", "")}`;
+      });
+      console.log("Selected team:", selectedTeam);
+      router.push(`/${selectedTeam.team_id}`);
     }
-  };
+  }
 
   // Function to fetch user teams at the launch but also when a teams is created or deleted
   function fetchUserTeams() {
@@ -96,6 +107,10 @@ export function AppSidebar() {
     }
   }
 
+  useEffect(() => {
+    updateLinks();
+  }, [selectedTeam]);
+
   // Fetch user teams at the launch
   useEffect(() => {
     if (user && user.id) {
@@ -111,6 +126,7 @@ export function AppSidebar() {
             teams={teams}
             createTeam={createTeam}
             fetchUserTeams={fetchUserTeams}
+            setSelectedTeam={setSelectedTeam}
             user_id={user.id}
           />
         )}
@@ -121,7 +137,7 @@ export function AppSidebar() {
           <SidebarGroupLabel>Plateform</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {Links.map(({ href, label, Icon }) => (
+              {PersonnalLinks.map(({ href, label, Icon }) => (
                 <SidebarMenuItem key={href}>
                   <SidebarMenuButton asChild>
                     <Link href={href}>
@@ -134,35 +150,6 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-
-        <Collapsible defaultOpen className="group/collapsible">
-          <SidebarGroup>
-            <SidebarGroupLabel asChild>
-              <CollapsibleTrigger>
-                Projects
-                <ChevronDown className="ml-auto -rotate-90 transition-transform transform group-data-[state=open]/collapsible:-rotate-[90]" />
-              </CollapsibleTrigger>
-            </SidebarGroupLabel>
-            <CollapsibleContent>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton asChild>Project 1</SidebarMenuButton>
-                  </SidebarMenuItem>
-                  {/* Create a project */}
-                  <SidebarMenuItem>
-                    <SidebarMenuButton asChild>
-                      <Link href="#" className="hover-bg-opacity">
-                        <PlusCircle />
-                        Create a project
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </CollapsibleContent>
-          </SidebarGroup>
-        </Collapsible>
       </SidebarContent>
       <SidebarFooter>
         <ModeToggle />

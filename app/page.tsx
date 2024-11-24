@@ -1,26 +1,13 @@
 "use client";
 
 import { useUser } from "@/hooks/useUser";
-import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function Home() {
   // TODO: Create a useNavigation hook to handle useRouter and other navigation-related logic
   const router = useRouter();
   const { user, loading } = useUser();
-
-  const logout = async () => {
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        console.error("Error signing out:", error.message);
-      } else {
-        router.refresh();
-      }
-    } catch (err) {
-      console.error("Unexpected error during logout:", err);
-    }
-  };
 
   if (loading) {
     return <p>Loading user information...</p>;
@@ -37,11 +24,6 @@ export default function Home() {
         <div className="aspect-video rounded-xl bg-muted/50" />
       </div>
       <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min" />
-      {/* <div>
-          <h1>Welcome, {user.user_metadata?.firstname}</h1>
-          <p>User ID: {user.id}</p>
-          <button onClick={logout}>Logout</button>
-        </div> */}
     </div>
   );
 }

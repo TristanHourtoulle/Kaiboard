@@ -45,7 +45,6 @@ import {
 } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
 import { useDeleteMeeting, useUpdateMeeting } from "@/hooks/useMeeting";
-import { getUTC } from "@/hooks/useUser";
 import { utcTimezones } from "@/lib/types";
 import {
   cn,
@@ -188,7 +187,9 @@ export const MeetingCard = (props: MeetingCardProps) => {
       <CardHeader className="w-full">
         <div className="flex flex-col items-start gap-0">
           <CardTitle className="text-lg pb-0 mb-0">{title}</CardTitle>
-          <CardDescription className="text-md">{description}</CardDescription>
+          <CardDescription className="text-md truncate max-w-full">
+            {description}
+          </CardDescription>
         </div>
       </CardHeader>
 

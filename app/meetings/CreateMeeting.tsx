@@ -76,6 +76,7 @@ export const CreateMeeting = ({
   const [date, setDate] = useState<Date | null>(null);
   const { createMeeting, loading, error } = useCreateMeeting();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [savedZones, setSavedZones] = useState<any[]>([]);
 
   const combineDateAndTime = (
     date: Date | null,
@@ -165,6 +166,7 @@ export const CreateMeeting = ({
       ...form.getValues(),
       timezone: profile.location.utc,
     });
+    setSavedZones(profile.location.savedZones);
   }, [profile]);
 
   useEffect(() => {
@@ -347,6 +349,7 @@ export const CreateMeeting = ({
                     form.watch("timezone")
                   ) || new Date().toISOString()
                 }
+                savedZones={savedZones}
               />
             </div>
 

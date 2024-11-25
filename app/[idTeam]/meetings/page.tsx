@@ -22,7 +22,7 @@ export default function TeamMeeting({
   const { user, loading } = useUser();
   const [userPreferences, setUserPreferences] = useState({
     utc: null,
-    savedUtc: getSavedZones(),
+    savedUtc: [],
   });
   const { getTeamById } = useTeam();
   const [team, setTeam] = useState<any>(null);
@@ -31,7 +31,7 @@ export default function TeamMeeting({
     if (!profile) return;
     setUserPreferences({
       utc: profile.location.utc,
-      savedUtc: getSavedZones(),
+      savedUtc: profile.location.savedZones,
     });
   }, [profile]);
 
@@ -111,6 +111,7 @@ export default function TeamMeeting({
                 shedule={schedule}
                 onMeetingDeleted={loadMeetings}
                 utc={profile.location.utc}
+                savedZone={userPreferences.savedUtc}
               />
             );
           })

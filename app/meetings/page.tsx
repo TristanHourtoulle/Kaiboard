@@ -2,7 +2,7 @@
 
 import { useUserMeetings } from "@/hooks/useMeeting";
 import { useProfile } from "@/hooks/useProfile";
-import { getSavedZones, useUser } from "@/hooks/useUser";
+import { useUser } from "@/hooks/useUser";
 import { splitDateTime } from "@/lib/utils";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -16,7 +16,7 @@ export default function Page() {
   const [userId, setUserId] = useState<string | null>(null);
   const [userPreferences, setUserPreferences] = useState({
     utc: null,
-    savedUtc: getSavedZones(),
+    savedUtc: [],
   });
   const [meetingsList, setMeetingsList] = useState<any[]>([]);
 
@@ -24,7 +24,7 @@ export default function Page() {
     if (!profile) return;
     setUserPreferences({
       utc: profile.location.utc,
-      savedUtc: getSavedZones(),
+      savedUtc: profile.location.savedZones,
     });
   }, [profile]);
 
@@ -87,6 +87,7 @@ export default function Page() {
                 shedule={schedule}
                 onMeetingDeleted={loadMeetings}
                 utc={userPreferences.utc || ""}
+                savedZone={userPreferences.savedUtc || []}
               />
             );
           })

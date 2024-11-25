@@ -4,6 +4,7 @@ import { getSavedZones, zonesSavedType } from "@/hooks/useUser";
 
 export type PreviewDateTimeProps = {
   dateTime: string;
+  savedZones: any[];
 };
 
 // Params received: ("2024-11-30T12:00:00+00:00", "utc+1")
@@ -64,21 +65,20 @@ export const formatDateTime = (
 };
 
 export const PreviewDateTime = (props: PreviewDateTimeProps) => {
-  const { dateTime } = props;
-  const savedZone: zonesSavedType[] = getSavedZones();
+  const { dateTime, savedZones } = props;
 
   return (
     <div className="flex flex-col items-start gap-3 w-full">
-      {savedZone.map((zone, index) => {
+      {savedZones.map((zone, index) => {
         const { date, time } = formatDateTime(
-          convertDateTimeToUtc(dateTime, zone.timezone)
+          convertDateTimeToUtc(dateTime, zone.utc)
         );
         return (
           <div key={index} className="flex items-center justify-between w-full">
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-500">{zone.country}</span>
               <span className="text-sm text-gray-500">
-                {zone.timezone.toUpperCase()}
+                {zone.utc.toUpperCase()}
               </span>
             </div>
             <div className="flex items-center gap-2">

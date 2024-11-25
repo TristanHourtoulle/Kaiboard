@@ -81,12 +81,13 @@ export type MeetingCardProps = {
   shedule: string[];
   onMeetingDeleted: () => void;
   utc: string;
+  savedZone: any[];
 };
 
 export const MeetingCard = (props: MeetingCardProps) => {
   const { id, created_at, date_time, title, description, team_id } =
     props.meeting;
-  const { onMeetingDeleted, utc } = props;
+  const { onMeetingDeleted, utc, savedZone } = props;
 
   const [meetingShedule, setMeetingShedule] = useState(props.shedule);
   const { updateTeamMeeting, deleteTeamMeeting } = useTeamMeeting();
@@ -196,7 +197,7 @@ export const MeetingCard = (props: MeetingCardProps) => {
             <Clock className="w-4 h-4 opacity-75" />
           </div>
         </div>
-        <PreviewDateTime dateTime={date_time} />
+        <PreviewDateTime dateTime={date_time} savedZones={savedZone} />
       </CardContent>
       <CardFooter className="flex justify-between w-full">
         <Button

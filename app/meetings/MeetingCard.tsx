@@ -84,6 +84,7 @@ export type MeetingCardProps = {
   shedule: string[];
   onMeetingDeleted: () => void;
   utc: string;
+  savedZone: any[];
 };
 
 export const MeetingCard = (props: MeetingCardProps) => {
@@ -96,7 +97,7 @@ export const MeetingCard = (props: MeetingCardProps) => {
     participants,
     user_id,
   } = props.meeting;
-  const { onMeetingDeleted, utc } = props;
+  const { onMeetingDeleted, utc, savedZone } = props;
   const router = useRouter();
 
   const [meetingShedule, setMeetingShedule] = useState(props.shedule);
@@ -195,9 +196,7 @@ export const MeetingCard = (props: MeetingCardProps) => {
         <div className="flex items-center justify-between w-full gap-8 text-md">
           <div className="flex items-center justify-center gap-2">
             <CalendarClock className="w-4 h-4 opacity-75" />
-            <p>
-              {convertDateTimeToUtc(formatDateFromString(date_time), utc)}
-            </p>
+            <p>{convertDateTimeToUtc(formatDateFromString(date_time), utc)}</p>
           </div>
           <div className="flex items-center justify-center gap-2">
             <p>
@@ -209,7 +208,7 @@ export const MeetingCard = (props: MeetingCardProps) => {
             <Clock className="w-4 h-4 opacity-75" />
           </div>
         </div>
-        <PreviewDateTime dateTime={date_time} />
+        <PreviewDateTime dateTime={date_time} savedZones={savedZone} />
       </CardContent>
       <CardFooter className="flex justify-between w-full">
         <Button

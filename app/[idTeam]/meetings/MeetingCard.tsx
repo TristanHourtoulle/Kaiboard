@@ -45,7 +45,6 @@ import {
 } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
 import { useTeamMeeting } from "@/hooks/useTeamMeeting";
-import { getUTC } from "@/hooks/useUser";
 import { utcTimezones } from "@/lib/types";
 import {
   cn,
@@ -81,23 +80,24 @@ export type MeetingCardProps = {
   };
   shedule: string[];
   onMeetingDeleted: () => void;
+  utc: string;
 };
 
 export const MeetingCard = (props: MeetingCardProps) => {
   const { id, created_at, date_time, title, description, team_id } =
     props.meeting;
-  const { onMeetingDeleted } = props;
+  const { onMeetingDeleted, utc } = props;
 
   const [meetingShedule, setMeetingShedule] = useState(props.shedule);
   const { updateTeamMeeting, deleteTeamMeeting } = useTeamMeeting();
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      timezone: getUTC() || "",
+      timezone: utc || "",
       title: title || "",
       description: description || "",
       date: meetingShedule[0] || "",
-      time: convertTimeToUtc(meetingShedule[1], getUTC()) || "",
+      time: convertTimeToUtc(meetingShedule[1], utc) || "",
     },
   });
 
@@ -184,15 +184,13 @@ export const MeetingCard = (props: MeetingCardProps) => {
         <div className="flex items-center justify-between w-full gap-8 text-md">
           <div className="flex items-center justify-center gap-2">
             <CalendarClock className="w-4 h-4 opacity-75" />
-            <p>
-              {convertDateTimeToUtc(formatDateFromString(date_time), getUTC())}
-            </p>
+            <p>{convertDateTimeToUtc(formatDateFromString(date_time), utc)}</p>
           </div>
           <div className="flex items-center justify-center gap-2">
             <p>
               {convertTimeToUtc(
                 formatTimeWithoutSeconds(meetingShedule[1]),
-                getUTC()
+                utc
               )}
             </p>
             <Clock className="w-4 h-4 opacity-75" />

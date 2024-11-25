@@ -44,11 +44,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { useProfile } from "@/hooks/useProfile";
 import { getUTC } from "@/hooks/useUser";
 import { cn, combineDateTime } from "@/lib/utils";
 import { format } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PreviewDateTime } from "./PreviewDateTime";
 
 // Validation schema for all form inputs
@@ -71,6 +72,7 @@ export const CreateMeeting = ({
   user,
   onMeetingCreated,
 }: CreateMeetingProps) => {
+  const { profile, getProfile } = useProfile();
   const [date, setDate] = useState<Date | null>(null);
   const { createMeeting, loading, error } = useCreateMeeting();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -100,6 +102,7 @@ export const CreateMeeting = ({
   };
 
   const formatTimezone = (utc: string): string => {
+    if (!utc) return "+00:00"; // Retour par défaut si le fuseau horaire est vide
     // Correspond au format "utc+8" ou "utc-3"
     const match = utc.match(/utc([+-])(\d+)/i);
     if (!match) {
@@ -155,6 +158,23 @@ export const CreateMeeting = ({
       time: new Date().toLocaleTimeString().slice(0, 5),
     },
   });
+
+  useEffect(() => {
+    if (!profile) return;
+    form.reset({
+      ...form.getValues(),
+      timezone: profile.location.utc,
+    });
+  }, [profile]);
+
+  useEffect(() => {
+    const fetchProfile = async (userId: string) => {
+      if (user?.id) {
+        await getProfile(user.id);
+      }
+    };
+    fetchProfile(user?.id);
+  }, [user]);
 
   return (
     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

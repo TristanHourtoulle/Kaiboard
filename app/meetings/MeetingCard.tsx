@@ -83,6 +83,7 @@ export type MeetingCardProps = {
   };
   shedule: string[];
   onMeetingDeleted: () => void;
+  utc: string;
 };
 
 export const MeetingCard = (props: MeetingCardProps) => {
@@ -95,7 +96,7 @@ export const MeetingCard = (props: MeetingCardProps) => {
     participants,
     user_id,
   } = props.meeting;
-  const { onMeetingDeleted } = props;
+  const { onMeetingDeleted, utc } = props;
   const router = useRouter();
 
   const [meetingShedule, setMeetingShedule] = useState(props.shedule);
@@ -104,11 +105,11 @@ export const MeetingCard = (props: MeetingCardProps) => {
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      timezone: getUTC() || "",
+      timezone: utc || "",
       title: title || "",
       description: description || "",
       date: meetingShedule[0] || "",
-      time: convertTimeToUtc(meetingShedule[1], getUTC()) || "",
+      time: convertTimeToUtc(meetingShedule[1], utc) || "",
     },
   });
 
@@ -195,14 +196,14 @@ export const MeetingCard = (props: MeetingCardProps) => {
           <div className="flex items-center justify-center gap-2">
             <CalendarClock className="w-4 h-4 opacity-75" />
             <p>
-              {convertDateTimeToUtc(formatDateFromString(date_time), getUTC())}
+              {convertDateTimeToUtc(formatDateFromString(date_time), utc)}
             </p>
           </div>
           <div className="flex items-center justify-center gap-2">
             <p>
               {convertTimeToUtc(
                 formatTimeWithoutSeconds(meetingShedule[1]),
-                getUTC()
+                utc
               )}
             </p>
             <Clock className="w-4 h-4 opacity-75" />

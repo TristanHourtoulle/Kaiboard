@@ -3,7 +3,7 @@
 import { useProfile } from "@/hooks/useProfile";
 import { useTeam } from "@/hooks/useTeam";
 import { TeamMeetingType, useTeamMeeting } from "@/hooks/useTeamMeeting";
-import { getSavedZones, getUTC, useUser } from "@/hooks/useUser";
+import { getSavedZones, useUser } from "@/hooks/useUser";
 import { splitDateTime } from "@/lib/utils";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -18,21 +18,26 @@ export default function TeamMeeting({
 }) {
   const { createTeamMeeting, getTeamMeetings } = useTeamMeeting();
   const [teamMeetings, setTeamMeetings] = useState<TeamMeetingType[]>([]);
-  const { getProfile } = useProfile();
-  const [profile, setProfile] = useState<any>(null);
+  const { profile, getProfile } = useProfile();
   const { user, loading } = useUser();
   const [userPreferences, setUserPreferences] = useState({
-    utc: getUTC(),
+    utc: null,
     savedUtc: getSavedZones(),
   });
-  const hasUtcSettings = userPreferences.utc;
   const { getTeamById } = useTeam();
   const [team, setTeam] = useState<any>(null);
 
+  useEffect(() => {
+    if (!profile) return;
+    setUserPreferences({
+      utc: profile.location.utc,
+      savedUtc: getSavedZones(),
+    });
+  }, [profile]);
+
   const fetchProfile = async (userId: string) => {
     try {
-      const profile = await getProfile(userId);
-      setProfile(profile);
+      await getProfile(userId);
     } catch (error: any) {
       console.error("Error fetching profile:", error.message);
     }
@@ -95,7 +100,7 @@ export default function TeamMeeting({
       <div className="flex flex-wrap gap-4 items-center justify-start w-full">
         {loading ? (
           <Skeleton count={3} height={150} />
-        ) : teamMeetings.length > 0 && hasUtcSettings ? (
+        ) : teamMeetings.length > 0 && userPreferences.utc ? (
           teamMeetings.map((meeting: any) => {
             const schedule = splitDateTime(meeting.date_time);
             return (
@@ -105,10 +110,11 @@ export default function TeamMeeting({
                 meeting={meeting}
                 shedule={schedule}
                 onMeetingDeleted={loadMeetings}
+                utc={profile.location.utc}
               />
             );
           })
-        ) : !hasUtcSettings ? (
+        ) : !userPreferences.utc ? (
           // If the user has no UTC settings
           <div className="text-left w-full">
             <p className="text-gray-600">

@@ -3,7 +3,7 @@
 // Create a variable for all possibles UTC timezones in Earth with their respective offsets
 import { utcTimezones } from "@/lib/types";
 
-import { useCreateMeeting } from "@/hooks/useMeeting";
+import { useMeeting } from "@/hooks/useMeeting";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -74,7 +74,7 @@ export const CreateMeeting = ({
 }: CreateMeetingProps) => {
   const { profile, getProfile } = useProfile();
   const [date, setDate] = useState<Date | null>(null);
-  const { createMeeting, loading, error } = useCreateMeeting();
+  const { createMeeting, loading, error } = useMeeting();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [savedZones, setSavedZones] = useState<any[]>([]);
 

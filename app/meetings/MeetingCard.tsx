@@ -45,7 +45,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
-import { useDeleteMeeting, useUpdateMeeting } from "@/hooks/useMeeting";
+import { useMeeting } from "@/hooks/useMeeting";
 import { utcTimezones } from "@/lib/types";
 import {
   cn,
@@ -58,7 +58,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import { CalendarClock, CalendarIcon, Clock } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { PreviewDateTime } from "./PreviewDateTime";
@@ -101,8 +101,7 @@ export const MeetingCard = (props: MeetingCardProps) => {
   const router = useRouter();
 
   const [meetingShedule, setMeetingShedule] = useState(props.shedule);
-  const { updateMeeting, loading, error } = useUpdateMeeting();
-  const { deleteMeeting } = useDeleteMeeting();
+  const { deleteMeeting, updateMeeting } = useMeeting();
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -152,31 +151,30 @@ export const MeetingCard = (props: MeetingCardProps) => {
       );
 
       // Appel à l'API Supabase pour mettre à jour la réunion
-      const updatedMeeting = await updateMeeting(id, {
+      const tempMeeting: any = await updateMeeting(id, {
         ...values,
         date_time: newDateTime, // Envoi en UTC
       });
 
-      if (updatedMeeting) {
-        // Mettre à jour les champs du formulaire
+      if (tempMeeting) {
         form.reset({
-          timezone: updatedMeeting.timezone || values.timezone,
-          title: updatedMeeting.title || values.title,
-          description: updatedMeeting.description || values.description,
+          timezone: values.timezone,
+          title: values.title,
+          description: values.description,
           date: values.date, // Extract the date part as a string
           time: values.time,
         });
 
         // Mettre à jour localement les données
         setMeetingShedule([
-          updatedMeeting.date_time.split("T")[0], // Date
-          updatedMeeting.date_time.split("T")[1].split("+")[0], // Heure HH:mm
+          tempMeeting.date_time.split("T")[0], // Date
+          tempMeeting.date_time.split("T")[1].split("+")[0], // Heure HH:mm
           convertTimezone(values.timezone), // Fuseau horaire
         ]);
 
-        props.meeting.title = updatedMeeting.title;
-        props.meeting.description = updatedMeeting.description;
-        props.meeting.date_time = updatedMeeting.date_time;
+        props.meeting.title = tempMeeting.title;
+        props.meeting.description = tempMeeting.description;
+        props.meeting.date_time = tempMeeting.date_time;
       }
     } catch (err) {
       console.error("Error updating meeting:", err);

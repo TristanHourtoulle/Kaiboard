@@ -1,6 +1,6 @@
 "use client";
 
-import { useUserMeetings } from "@/hooks/useMeeting";
+import { useMeeting } from "@/hooks/useMeeting";
 import { useProfile } from "@/hooks/useProfile";
 import { useUser } from "@/hooks/useUser";
 import { splitDateTime } from "@/lib/utils";
@@ -18,7 +18,6 @@ export default function Page() {
     utc: null,
     savedUtc: [],
   });
-  const [meetingsList, setMeetingsList] = useState<any[]>([]);
 
   useEffect(() => {
     if (!profile) return;
@@ -30,10 +29,11 @@ export default function Page() {
 
   const {
     loading: meetingsLoading,
-    meetings,
     error,
-    fetchMeetings,
-  } = useUserMeetings(userId || "");
+    meeting,
+    meetingsList,
+    fetchMeetingsList,
+  } = useMeeting();
 
   useEffect(() => {
     if (!userLoading && user?.id && !userId) {
@@ -43,8 +43,7 @@ export default function Page() {
   }, [user, userLoading]);
 
   const loadMeetings = async () => {
-    fetchMeetings();
-    setMeetingsList(meetings || []);
+    fetchMeetingsList(user?.id);
   };
 
   useEffect(() => {
@@ -77,8 +76,8 @@ export default function Page() {
           <Skeleton count={3} height={150} />
         ) : error ? (
           <p className="text-red-500">Error: {error}</p>
-        ) : meetings.length > 0 && userPreferences.utc ? (
-          meetings.map((meeting: any) => {
+        ) : meetingsList.length > 0 && userPreferences.utc ? (
+          meetingsList.map((meeting: any) => {
             const schedule = splitDateTime(meeting.date_time);
             return (
               <MeetingCard
@@ -108,7 +107,7 @@ export default function Page() {
             </div>
           </div>
         ) : (
-          meetings.length === 0 && (
+          meetingsList.length === 0 && (
             // If there are no meetings
             <div className="text-center">
               <p className="text-gray-600">You have no meetings scheduled.</p>

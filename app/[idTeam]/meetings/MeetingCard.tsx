@@ -33,6 +33,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 import {
   Sheet,
   SheetClose,
@@ -182,6 +183,8 @@ export const MeetingCard = (props: MeetingCardProps) => {
           </CardDescription>
         </div>
       </CardHeader>
+
+      <Separator className="w-[75%] mx-auto rounded-full h-0.5 opacity-50 mb-[5%]" />
 
       <CardContent className="flex flex-col gap-4">
         <div className="flex items-center justify-between w-full gap-8 text-md">

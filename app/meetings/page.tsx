@@ -1,7 +1,8 @@
 "use client";
 
-import { useUserMeetings } from "@/hooks/useMeeting";
-import { getSavedZones, getUTC, useUser } from "@/hooks/useUser";
+import { useMeeting } from "@/hooks/useMeeting";
+import { useProfile } from "@/hooks/useProfile";
+import { useUser } from "@/hooks/useUser";
 import { splitDateTime } from "@/lib/utils";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -11,32 +12,38 @@ import { MeetingCard } from "./MeetingCard";
 
 export default function Page() {
   const { user, loading: userLoading } = useUser();
+  const { profile, getProfile } = useProfile();
   const [userId, setUserId] = useState<string | null>(null);
   const [userPreferences, setUserPreferences] = useState({
-    utc: getUTC(),
-    savedUtc: getSavedZones(),
+    utc: null,
+    savedUtc: [],
   });
-  const [meetingsList, setMeetingsList] = useState<any[]>([]);
 
-  // Check if UTC settings are missing
-  const hasUtcSettings = userPreferences.utc;
+  useEffect(() => {
+    if (!profile) return;
+    setUserPreferences({
+      utc: profile.location.utc,
+      savedUtc: profile.location.savedZones,
+    });
+  }, [profile]);
 
   const {
     loading: meetingsLoading,
-    meetings,
     error,
-    fetchMeetings,
-  } = useUserMeetings(userId || "");
+    meeting,
+    meetingsList,
+    fetchMeetingsList,
+  } = useMeeting();
 
   useEffect(() => {
     if (!userLoading && user?.id && !userId) {
       setUserId(user.id);
+      getProfile(user.id);
     }
   }, [user, userLoading]);
 
   const loadMeetings = async () => {
-    fetchMeetings();
-    setMeetingsList(meetings || []);
+    fetchMeetingsList(user?.id);
   };
 
   useEffect(() => {
@@ -58,7 +65,7 @@ export default function Page() {
             Here, you can create some meetings and invite some collaborators.
           </p>
         </div>
-        {!userLoading && user && hasUtcSettings && (
+        {!userLoading && user && userPreferences.utc && (
           <CreateMeeting user={user} onMeetingCreated={loadMeetings} />
         )}
       </div>
@@ -69,8 +76,8 @@ export default function Page() {
           <Skeleton count={3} height={150} />
         ) : error ? (
           <p className="text-red-500">Error: {error}</p>
-        ) : meetings.length > 0 && hasUtcSettings ? (
-          meetings.map((meeting: any) => {
+        ) : meetingsList.length > 0 && userPreferences.utc ? (
+          meetingsList.map((meeting: any) => {
             const schedule = splitDateTime(meeting.date_time);
             return (
               <MeetingCard
@@ -78,10 +85,12 @@ export default function Page() {
                 meeting={meeting}
                 shedule={schedule}
                 onMeetingDeleted={loadMeetings}
+                utc={userPreferences.utc || ""}
+                savedZone={userPreferences.savedUtc || []}
               />
             );
           })
-        ) : !hasUtcSettings ? (
+        ) : !userPreferences.utc ? (
           // If the user has no UTC settings
           <div className="text-left w-full">
             <p className="text-gray-600">
@@ -98,7 +107,7 @@ export default function Page() {
             </div>
           </div>
         ) : (
-          meetings.length === 0 && (
+          meetingsList.length === 0 && (
             // If there are no meetings
             <div className="text-center">
               <p className="text-gray-600">You have no meetings scheduled.</p>

@@ -26,6 +26,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ChevronsUpDown, GalleryVerticalEnd, Plus } from "lucide-react";
+import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -118,6 +119,7 @@ export function TeamSwitcher({
   useEffect(() => {
     setSelectedTeam(activeTeam);
   }, [activeTeam]);
+
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -128,7 +130,13 @@ export function TeamSwitcher({
               className="data-[state=open]:bg-accent data-[state=open]:text-accent-foreground"
             >
               <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                <GalleryVerticalEnd className="size-4" />
+                {/* <GalleryVerticalEnd className="size-4" /> */}
+                <Image
+                  src={"/logo/Logo - Kaiboard - Transparent.svg"}
+                  alt="Kaiboard Logo"
+                  width={30}
+                  height={30}
+                />
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-semibold">

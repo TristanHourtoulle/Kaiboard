@@ -33,6 +33,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 import {
   Sheet,
   SheetClose,
@@ -44,8 +45,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
-import { useDeleteMeeting, useUpdateMeeting } from "@/hooks/useMeeting";
-import { getUTC } from "@/hooks/useUser";
+import { useMeeting } from "@/hooks/useMeeting";
 import { utcTimezones } from "@/lib/types";
 import {
   cn,
@@ -56,7 +56,8 @@ import {
 } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
-import { CalendarClock, CalendarIcon, Clock } from "lucide-react";
+import { CalendarClock, CalendarIcon, Clock, LinkIcon } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -69,6 +70,7 @@ const formSchema = z.object({
   description: z.string().min(1, { message: "Description is required." }),
   date: z.date({ required_error: "Date is required." }),
   time: z.string().min(1, { message: "Time is required." }),
+  link: z.string().optional(),
 });
 
 export type MeetingCardProps = {
@@ -80,9 +82,12 @@ export type MeetingCardProps = {
     description: string;
     participants: string[];
     user_id: string;
+    link: string;
   };
   shedule: string[];
   onMeetingDeleted: () => void;
+  utc: string;
+  savedZone: any[];
 };
 
 export const MeetingCard = (props: MeetingCardProps) => {
@@ -94,21 +99,22 @@ export const MeetingCard = (props: MeetingCardProps) => {
     description,
     participants,
     user_id,
+    link,
   } = props.meeting;
-  const { onMeetingDeleted } = props;
+  const { onMeetingDeleted, utc, savedZone } = props;
   const router = useRouter();
 
   const [meetingShedule, setMeetingShedule] = useState(props.shedule);
-  const { updateMeeting, loading, error } = useUpdateMeeting();
-  const { deleteMeeting } = useDeleteMeeting();
+  const { deleteMeeting, updateMeeting } = useMeeting();
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      timezone: getUTC() || "",
+      timezone: utc || "",
       title: title || "",
       description: description || "",
+      link: link || "",
       date: meetingShedule[0] || "",
-      time: convertTimeToUtc(meetingShedule[1], getUTC()) || "",
+      time: convertTimeToUtc(meetingShedule[1], utc) || "",
     },
   });
 
@@ -150,31 +156,32 @@ export const MeetingCard = (props: MeetingCardProps) => {
       );
 
       // Appel à l'API Supabase pour mettre à jour la réunion
-      const updatedMeeting = await updateMeeting(id, {
+      const tempMeeting: any = await updateMeeting(id, {
         ...values,
         date_time: newDateTime, // Envoi en UTC
       });
 
-      if (updatedMeeting) {
-        // Mettre à jour les champs du formulaire
+      if (tempMeeting) {
         form.reset({
-          timezone: updatedMeeting.timezone || values.timezone,
-          title: updatedMeeting.title || values.title,
-          description: updatedMeeting.description || values.description,
+          timezone: values.timezone,
+          title: values.title,
+          description: values.description,
           date: values.date, // Extract the date part as a string
           time: values.time,
+          link: values.link,
         });
 
         // Mettre à jour localement les données
         setMeetingShedule([
-          updatedMeeting.date_time.split("T")[0], // Date
-          updatedMeeting.date_time.split("T")[1].split("+")[0], // Heure HH:mm
+          tempMeeting.date_time.split("T")[0], // Date
+          tempMeeting.date_time.split("T")[1].split("+")[0], // Heure HH:mm
           convertTimezone(values.timezone), // Fuseau horaire
         ]);
 
-        props.meeting.title = updatedMeeting.title;
-        props.meeting.description = updatedMeeting.description;
-        props.meeting.date_time = updatedMeeting.date_time;
+        props.meeting.title = tempMeeting.title;
+        props.meeting.description = tempMeeting.description;
+        props.meeting.date_time = tempMeeting.date_time;
+        props.meeting.link = tempMeeting.link;
       }
     } catch (err) {
       console.error("Error updating meeting:", err);
@@ -186,29 +193,53 @@ export const MeetingCard = (props: MeetingCardProps) => {
       <CardHeader className="w-full">
         <div className="flex flex-col items-start gap-0">
           <CardTitle className="text-lg pb-0 mb-0">{title}</CardTitle>
-          <CardDescription className="text-md">{description}</CardDescription>
+          <CardDescription className="text-md truncate max-w-full">
+            {description}
+          </CardDescription>
         </div>
+        {link ? (
+          <div className=" transition-all flex items-center gap-1.5 mt-3">
+            <LinkIcon className="w-4 h-4" />
+            <Link
+              target="_blank"
+              href={link}
+              className="transition-all italic text-md font-light cursor-pointer opacity-75 hover:text-primary hover:opacity-100"
+            >
+              Join the meeting
+            </Link>
+          </div>
+        ) : (
+          <div className="flex items-center gap-1.5 mt-3">
+            <LinkIcon className="w-4 h-4" />
+            <Link
+              href={"#"}
+              className="italic font-light cursor-not-allowed opacity-75 hover:text-primary"
+            >
+              Aucun lien.
+            </Link>
+          </div>
+        )}
       </CardHeader>
+
+      <Separator className="w-[75%] mx-auto rounded-full h-0.5 opacity-50 mb-[5%]" />
 
       <CardContent className="flex flex-col gap-4">
         <div className="flex items-center justify-between w-full gap-8 text-md">
           <div className="flex items-center justify-center gap-2">
             <CalendarClock className="w-4 h-4 opacity-75" />
-            <p>
-              {convertDateTimeToUtc(formatDateFromString(date_time), getUTC())}
-            </p>
+            <p>{convertDateTimeToUtc(formatDateFromString(date_time), utc)}</p>
           </div>
           <div className="flex items-center justify-center gap-2">
             <p>
               {convertTimeToUtc(
                 formatTimeWithoutSeconds(meetingShedule[1]),
-                getUTC()
+                utc
               )}
             </p>
             <Clock className="w-4 h-4 opacity-75" />
           </div>
         </div>
-        <PreviewDateTime dateTime={date_time} />
+        <PreviewDateTime dateTime={date_time} savedZones={savedZone} />
       </CardContent>
       <CardFooter className="flex justify-between w-full">
         <Button
@@ -266,6 +297,25 @@ export const MeetingCard = (props: MeetingCardProps) => {
                       <FormControl>
                         <Textarea
                           placeholder="Type your description here."
+                          className="w-full"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Link Input */}
+                <FormField
+                  control={form.control}
+                  name="link"
+                  render={({ field }: { field: any }) => (
+                    <FormItem className="w-full">
+                      <FormLabel>Link</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Type your meeting link here"
                           className="w-full"
                           {...field}
                         />

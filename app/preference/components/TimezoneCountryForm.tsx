@@ -32,12 +32,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { getUtcCountry, updateUtcCountry } from "@/hooks/useUser";
+import { useProfile } from "@/hooks/useProfile";
+import { getUtcCountry, useUser } from "@/hooks/useUser";
 import { countryNameRecord, utcTimezones } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Check, ChevronsUpDown } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -48,6 +49,8 @@ const formSchema = z.object({
 });
 
 export const TimezoneCountryForm = () => {
+  const { user, loading: userLoading } = useUser();
+  const { profile, getProfile, updateProfile } = useProfile();
   const { savedUtc, savedCountry } = getUtcCountry();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
@@ -55,18 +58,54 @@ export const TimezoneCountryForm = () => {
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      timezone: savedUtc || "",
-      country: savedCountry || "",
+      timezone: "",
+      country: "",
     },
   });
 
   const onSubmit = async (values: any) => {
-    updateUtcCountry(values.timezone, values.country);
-    toast({
-      title: "Updating your timezone and country",
-      description: "Your timezone and country have been saved.",
-    });
+    try {
+      // Put timezone and country in this json format:{
+      //   "utc": "utc+0",
+      //   "country": "FR"
+      // }
+      await updateProfile(user.id, {
+        location: {
+          utc: values.timezone,
+          country: values.country,
+        },
+      });
+      form.reset({
+        timezone: profile.location.utc,
+        country: profile.location.country,
+      });
+      toast({
+        title: "Updating your timezone and country",
+        description: "Your timezone and country have been saved.",
+      });
+    } catch (error: any) {
+      console.error("Error updating profile:", error.message);
+      toast({
+        title: "Error updating your timezone and country",
+        description: error.message,
+      });
+    }
   };
+
+  useEffect(() => {
+    if (profile) {
+      form.reset({
+        timezone: profile.location.utc,
+        country: profile.location.country,
+      });
+    }
+  }, [profile]);
+
+  useEffect(() => {
+    if (!userLoading && user?.id) {
+      getProfile(user.id);
+    }
+  }, [user, userLoading]);
 
   return (
     <div className="flex flex-col px-6 py-4 rounded-lg border border-border w-full h-full">

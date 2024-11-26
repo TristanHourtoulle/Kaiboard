@@ -7,13 +7,16 @@ type MeetingData = {
   date_time: string; // Format ISO8601
   timezone: string;
   participants?: object; // JSON object for participants
+  link?: string;
 };
 
-// Crée une réunion
-export function useCreateMeeting() {
-  const [loading, setLoading] = useState(false);
+export function useMeeting() {
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [meetingsList, setMeetingsList] = useState<any[]>([]);
+  const [meeting, setMeeting] = useState<any | null>(null);
 
+  // Créer une réunion
   const createMeeting = async (userId: string, data: MeetingData) => {
     setLoading(true);
     setError(null);
@@ -27,6 +30,7 @@ export function useCreateMeeting() {
           description: data.description,
           date_time: data.date_time,
           participants: data.participants || null,
+          link: data.link || null,
         })
         .select()
         .single();
@@ -34,6 +38,8 @@ export function useCreateMeeting() {
       if (error) {
         throw new Error(error.message);
       }
+
+      setMeeting(meeting);
 
       return meeting;
     } catch (err: any) {
@@ -44,16 +50,8 @@ export function useCreateMeeting() {
     }
   };
 
-  return { createMeeting, loading, error };
-}
-
-// Récupère les réunions d'un utilisateur
-export function useUserMeetings(userId: string) {
-  const [loading, setLoading] = useState(false);
-  const [meetings, setMeetings] = useState<any[]>([]);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchMeetings = async () => {
+  // Récupérer les réunions d'un utilisateur
+  const fetchMeetingsList = async (userId: string) => {
     setLoading(true);
     setError(null);
 
@@ -67,7 +65,7 @@ export function useUserMeetings(userId: string) {
         throw new Error(error.message);
       }
 
-      setMeetings(data || []);
+      setMeetingsList(data || []);
     } catch (err: any) {
       setError(err.message || "An unexpected error occurred.");
     } finally {
@@ -75,14 +73,31 @@ export function useUserMeetings(userId: string) {
     }
   };
 
-  return { loading, meetings, error, fetchMeetings };
-}
+  // Récupérer une réunion avec son id
+  const fetchMeeting = async (meetingId: string) => {
+    setLoading(true);
+    setError(null);
 
-// Mettre à jour une réunion
-export function useUpdateMeeting() {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+    try {
+      const { data: meeting, error } = await supabase
+        .from("meetings")
+        .select("*")
+        .eq("id", meetingId)
+        .single();
 
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      setMeeting(meeting);
+    } catch (err: any) {
+      setError(err.message || "An unexpected error occurred.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Mettre à jour une réunion
   const updateMeeting = async (meetingId: string, data: MeetingData) => {
     setLoading(true);
     setError(null);
@@ -95,6 +110,7 @@ export function useUpdateMeeting() {
           description: data.description,
           date_time: data.date_time,
           participants: data.participants || null,
+          link: data.link || null,
         })
         .eq("id", meetingId)
         .select()
@@ -104,6 +120,7 @@ export function useUpdateMeeting() {
         throw new Error(error.message);
       }
 
+      setMeeting(meeting);
       return meeting;
     } catch (err: any) {
       setError(err.message || "An unexpected error occurred.");
@@ -113,14 +130,7 @@ export function useUpdateMeeting() {
     }
   };
 
-  return { updateMeeting, loading, error };
-}
-
-// Supprimer une réunion
-export function useDeleteMeeting() {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
+  // Supprimer une réunion
   const deleteMeeting = async (meetingId: string) => {
     setLoading(true);
     setError(null);
@@ -141,5 +151,15 @@ export function useDeleteMeeting() {
     }
   };
 
-  return { deleteMeeting, loading, error };
+  return {
+    loading,
+    error,
+    meetingsList,
+    meeting,
+    createMeeting,
+    fetchMeeting,
+    fetchMeetingsList,
+    updateMeeting,
+    deleteMeeting,
+  };
 }

@@ -3,11 +3,6 @@
 // Create a variable for all possibles UTC timezones in Earth with their respective offsets
 import { utcTimezones } from "@/lib/types";
 
-import { useMeeting } from "@/hooks/useMeeting";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -34,6 +29,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Select,
   SelectContent,
@@ -44,12 +40,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { useMeeting } from "@/hooks/useMeeting";
 import { useProfile } from "@/hooks/useProfile";
 import { getUTC } from "@/hooks/useUser";
 import { cn, combineDateTime } from "@/lib/utils";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 import { PreviewDateTime } from "./PreviewDateTime";
 
 // Validation schema for all form inputs
@@ -58,6 +58,7 @@ const formSchema = z.object({
   description: z.string().min(1, { message: "Description is required." }),
   date: z.date({ required_error: "Date is required." }),
   timezone: z.string().min(1, { message: "Timezone is required." }),
+  link: z.string().optional(),
   time: z
     .string()
     .regex(/^([01]\d|2[0-3]):([0-5]\d)$/, { message: "Invalid time format." }),
@@ -132,6 +133,7 @@ export const CreateMeeting = ({
         date_time: combineDateTime(data.date, data.time, data.timezone), // Format ISO pour Supabase
         timezone: data.timezone,
         participants: [], // Ajoutez des participants si nécessaire
+        link: data.link || null,
       };
 
       const createdMeeting = await createMeeting(user.id, meetingData);
@@ -154,6 +156,7 @@ export const CreateMeeting = ({
     defaultValues: {
       title: "",
       description: "",
+      link: "",
       date: new Date().toISOString(),
       timezone: getUTC() || "",
       time: new Date().toLocaleTimeString().slice(0, 5),
@@ -188,7 +191,7 @@ export const CreateMeeting = ({
           Create a meeting
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] lg:max-w-[600px] max-h-full">
         <DialogHeader>
           <DialogTitle>Create a meeting</DialogTitle>
           <DialogDescription>
@@ -200,138 +203,18 @@ export const CreateMeeting = ({
             onSubmit={form.handleSubmit(onSubmit)}
             className="grid gap-3 py-4"
           >
-            {/* Title Input */}
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }: { field: any }) => (
-                <FormItem>
-                  <FormLabel>Title</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Type your title here"
-                      className="w-full"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            {/* Description Input */}
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }: { field: any }) => (
-                <FormItem>
-                  <FormLabel>Description</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Type your description here."
-                      className="w-full"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            {/* Date Input */}
-            <FormField
-              control={form.control}
-              name="date"
-              render={({ field }: { field: any }) => (
-                <FormItem>
-                  <FormLabel>Date</FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant={"outline"}
-                          className={cn(
-                            "w-full justify-start text-left font-normal",
-                            !field.value && "text-muted-foreground"
-                          )}
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {field.value ? (
-                            format(field.value, "PPP")
-                          ) : (
-                            <span>Pick a date</span>
-                          )}
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0">
-                      <Calendar
-                        mode="single"
-                        selected={field.value}
-                        onSelect={field.onChange}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            {/* Timezone and Time */}
-            <div className="grid grid-cols-2 gap-4">
-              {/* Timezone */}
+            <ScrollArea className="max-h-[95%] rounded-md border p-4 border-none">
+              {/* Title Input */}
               <FormField
                 control={form.control}
-                name="timezone"
+                name="title"
                 render={({ field }: { field: any }) => (
                   <FormItem>
-                    <FormLabel>Timezone</FormLabel>
-                    <FormControl>
-                      <Select
-                        value={field.value}
-                        onValueChange={field.onChange}
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Select a timezone" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectGroup>
-                            <SelectLabel>Negative UTC</SelectLabel>
-                            {Object.entries(utcTimezones)
-                              .filter(([key, value]) => value.offset < 0)
-                              .map(([key, value]) => (
-                                <SelectItem key={key} value={key}>
-                                  {value.name}
-                                </SelectItem>
-                              ))}
-                          </SelectGroup>
-                          <SelectGroup>
-                            <SelectLabel>Positive UTC</SelectLabel>
-                            {Object.entries(utcTimezones)
-                              .filter(([key, value]) => value.offset >= 0)
-                              .map(([key, value]) => (
-                                <SelectItem key={key} value={key}>
-                                  {value.name}
-                                </SelectItem>
-                              ))}
-                          </SelectGroup>
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              {/* Time */}
-              <FormField
-                control={form.control}
-                name="time"
-                render={({ field }: { field: any }) => (
-                  <FormItem>
-                    <FormLabel>Time</FormLabel>
+                    <FormLabel>Title</FormLabel>
                     <FormControl>
                       <Input
-                        type="time"
-                        className="text-center"
-                        placeholder="Select a time"
+                        placeholder="Type your title here"
+                        className="w-full"
                         {...field}
                       />
                     </FormControl>
@@ -339,19 +222,159 @@ export const CreateMeeting = ({
                   </FormItem>
                 )}
               />
-            </div>
-            <div className="w-full">
-              <PreviewDateTime
-                dateTime={
-                  combineDateAndTime(
-                    new Date(form.watch("date")),
-                    form.watch("time"),
-                    form.watch("timezone")
-                  ) || new Date().toISOString()
-                }
-                savedZones={savedZones}
+              {/* Description Input */}
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }: { field: any }) => (
+                  <FormItem>
+                    <FormLabel>Description</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Type your description here."
+                        className="w-full"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
+              {/* Link Input */}
+              <FormField
+                control={form.control}
+                name="link"
+                render={({ field }: { field: any }) => (
+                  <FormItem>
+                    <FormLabel>Link</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Type your meeting link here"
+                        className="w-full"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              {/* Date Input */}
+              <FormField
+                control={form.control}
+                name="date"
+                render={({ field }: { field: any }) => (
+                  <FormItem>
+                    <FormLabel>Date</FormLabel>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant={"outline"}
+                            className={cn(
+                              "w-full justify-start text-left font-normal",
+                              !field.value && "text-muted-foreground"
+                            )}
+                          >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {field.value ? (
+                              format(field.value, "PPP")
+                            ) : (
+                              <span>Pick a date</span>
+                            )}
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0">
+                        <Calendar
+                          mode="single"
+                          selected={field.value}
+                          onSelect={field.onChange}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              {/* Timezone and Time */}
+              <div className="grid grid-cols-2 gap-4">
+                {/* Timezone */}
+                <FormField
+                  control={form.control}
+                  name="timezone"
+                  render={({ field }: { field: any }) => (
+                    <FormItem>
+                      <FormLabel>Timezone</FormLabel>
+                      <FormControl>
+                        <Select
+                          value={field.value}
+                          onValueChange={field.onChange}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Select a timezone" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectGroup>
+                              <SelectLabel>Negative UTC</SelectLabel>
+                              {Object.entries(utcTimezones)
+                                .filter(([key, value]) => value.offset < 0)
+                                .map(([key, value]) => (
+                                  <SelectItem key={key} value={key}>
+                                    {value.name}
+                                  </SelectItem>
+                                ))}
+                            </SelectGroup>
+                            <SelectGroup>
+                              <SelectLabel>Positive UTC</SelectLabel>
+                              {Object.entries(utcTimezones)
+                                .filter(([key, value]) => value.offset >= 0)
+                                .map(([key, value]) => (
+                                  <SelectItem key={key} value={key}>
+                                    {value.name}
+                                  </SelectItem>
+                                ))}
+                            </SelectGroup>
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                {/* Time */}
+                <FormField
+                  control={form.control}
+                  name="time"
+                  render={({ field }: { field: any }) => (
+                    <FormItem>
+                      <FormLabel>Time</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="time"
+                          className="text-center"
+                          placeholder="Select a time"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div className="w-full mt-4">
+                <PreviewDateTime
+                  dateTime={
+                    combineDateAndTime(
+                      new Date(form.watch("date")),
+                      form.watch("time"),
+                      form.watch("timezone")
+                    ) || new Date().toISOString()
+                  }
+                  savedZones={savedZones}
+                />
+              </div>
+            </ScrollArea>
 
             <DialogFooter className="mt-4 mb-0">
               <DialogClose asChild>

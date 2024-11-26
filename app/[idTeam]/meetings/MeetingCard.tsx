@@ -56,7 +56,8 @@ import {
 } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
-import { CalendarClock, CalendarIcon, Clock } from "lucide-react";
+import { CalendarClock, CalendarIcon, Clock, LinkIcon } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -68,6 +69,7 @@ const formSchema = z.object({
   description: z.string().min(1, { message: "Description is required." }),
   date: z.date({ required_error: "Date is required." }),
   time: z.string().min(1, { message: "Time is required." }),
+  link: z.string().optional(),
 });
 
 export type MeetingCardProps = {
@@ -78,6 +80,7 @@ export type MeetingCardProps = {
     title: string;
     description: string;
     team_id: string;
+    link: string;
   };
   shedule: string[];
   onMeetingDeleted: () => void;
@@ -86,7 +89,7 @@ export type MeetingCardProps = {
 };
 
 export const MeetingCard = (props: MeetingCardProps) => {
-  const { id, created_at, date_time, title, description, team_id } =
+  const { id, created_at, date_time, title, description, team_id, link } =
     props.meeting;
   const { onMeetingDeleted, utc, savedZone } = props;
 
@@ -100,6 +103,7 @@ export const MeetingCard = (props: MeetingCardProps) => {
       description: description || "",
       date: meetingShedule[0] || "",
       time: convertTimeToUtc(meetingShedule[1], utc) || "",
+      link: link || "",
     },
   });
 
@@ -155,6 +159,7 @@ export const MeetingCard = (props: MeetingCardProps) => {
           description: updatedMeeting.description || values.description,
           date: values.date, // Extract the date part as a string
           time: values.time,
+          link: updatedMeeting.link || values.link,
         });
 
         // Mettre à jour localement les données
@@ -167,6 +172,7 @@ export const MeetingCard = (props: MeetingCardProps) => {
         props.meeting.title = updatedMeeting.title;
         props.meeting.description = updatedMeeting.description;
         props.meeting.date_time = updatedMeeting.date_time;
+        props.meeting.link = updatedMeeting.link || values.link;
       }
     } catch (err) {
       console.error("Error updating meeting:", err);
@@ -182,6 +188,28 @@ export const MeetingCard = (props: MeetingCardProps) => {
             {description}
           </CardDescription>
         </div>
+        {link ? (
+          <div className=" transition-all flex items-center gap-1.5 mt-3">
+            <LinkIcon className="w-4 h-4" />
+            <Link
+              target="_blank"
+              href={link}
+              className="transition-all italic text-md font-light cursor-pointer opacity-75 hover:text-primary hover:opacity-100"
+            >
+              Join the meeting
+            </Link>
+          </div>
+        ) : (
+          <div className="flex items-center gap-1.5 mt-3">
+            <LinkIcon className="w-4 h-4" />
+            <Link
+              href={"#"}
+              className="italic font-light cursor-not-allowed opacity-75 hover:text-primary"
+            >
+              Aucun lien.
+            </Link>
+          </div>
+        )}
       </CardHeader>
 
       <Separator className="w-[75%] mx-auto rounded-full h-0.5 opacity-50 mb-[5%]" />
@@ -260,6 +288,25 @@ export const MeetingCard = (props: MeetingCardProps) => {
                       <FormControl>
                         <Textarea
                           placeholder="Type your description here."
+                          className="w-full"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Link Input */}
+                <FormField
+                  control={form.control}
+                  name="link"
+                  render={({ field }: { field: any }) => (
+                    <FormItem className="w-full">
+                      <FormLabel>Link</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Type your meeting link here"
                           className="w-full"
                           {...field}
                         />

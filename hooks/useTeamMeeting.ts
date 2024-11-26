@@ -19,6 +19,7 @@ export function useTeamMeeting() {
           date_time: data.date_time,
           title: data.title,
           description: data.description,
+          link: data.link || null,
         })
         .select()
         .single();
@@ -58,6 +59,7 @@ export function useTeamMeeting() {
           date_time: data.date_time,
           title: data.title,
           description: data.description,
+          link: data.link || null,
         })
         .eq("id", data.id)
         .select()

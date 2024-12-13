@@ -1,5 +1,4 @@
 import { clsx, type ClassValue } from "clsx";
-import { format } from "date-fns";
 import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
@@ -114,8 +113,9 @@ export function convertTimeToUtc(time: string, utc: string): string {
   return `${adjustedHours}:${adjustedMinutes}`;
 }
 
-// Convert a date-time string in UTC+0 to the UTC received as parameter
-export function convertDateTimeToUtc(dateTime: string, utc: string): string {
+// Params received: ("2024-11-30T12:00:00+00:00", "utc+1")
+// Returns: "2024-11-30T13:00"
+export const convertDateTimeToUtc = (dateTime: string, utc: string): string => {
   // Validate input
   if (!dateTime || !utc) {
     throw new Error("DateTime or UTC is undefined or invalid");
@@ -146,10 +146,10 @@ export function convertDateTimeToUtc(dateTime: string, utc: string): string {
   const adjustedDate = new Date(date.getTime() + offset * 60 * 60 * 1000);
 
   // Format the adjusted date as "Day Month Year"
-  const formattedDate = format(adjustedDate, "dd MMMM yyyy");
+  const formattedDate = adjustedDate.toISOString().slice(0, 16);
 
   return formattedDate;
-}
+};
 
 export function updateDateTimeWithUtc(dateTime: string, utc: string): string {
   // Validate input
@@ -220,4 +220,23 @@ export const combineDateTime = (date: Date, time: string, timezone: string) => {
   const timeStr = `${time}:00`;
   const timezoneStr = convertTimezone(timezone); // Convertit la timezone
   return `${dateStr}T${timeStr}${timezoneStr}`;
+};
+
+// Params received: ("2024-11-30T13:00")
+// returns: {date: "30 November 2024", time: "13:00"}
+export const formatDateTime = (
+  dateTime: string
+): { date: string; time: string } => {
+  const date = new Date(dateTime);
+  const formattedDate = date.toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+  const formattedTime = date.toLocaleTimeString("en-GB", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+  return { date: formattedDate, time: formattedTime };
 };

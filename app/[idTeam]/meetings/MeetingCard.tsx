@@ -51,7 +51,7 @@ import {
   cn,
   convertDateTimeToUtc,
   convertTimeToUtc,
-  formatDateFromString,
+  formatDateTime,
   formatTimeWithoutSeconds,
 } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -218,7 +218,8 @@ export const MeetingCard = (props: MeetingCardProps) => {
         <div className="flex items-center justify-between w-full gap-8 text-md">
           <div className="flex items-center justify-center gap-2">
             <CalendarClock className="w-4 h-4 opacity-75" />
-            <p>{convertDateTimeToUtc(formatDateFromString(date_time), utc)}</p>
+            {/* <p>{convertDateTimeToUtc(formatDateFromString(date_time), utc)}</p> */}
+            <p>{formatDateTime(convertDateTimeToUtc(date_time, utc)).date}</p>
           </div>
           <div className="flex items-center justify-center gap-2">
             <p>

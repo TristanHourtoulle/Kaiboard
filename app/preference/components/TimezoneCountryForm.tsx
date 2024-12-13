@@ -69,10 +69,14 @@ export const TimezoneCountryForm = () => {
       //   "utc": "utc+0",
       //   "country": "FR"
       // }
+      if (!profile) {
+        await getProfile(user.id);
+      }
       await updateProfile(user.id, {
         location: {
           utc: values.timezone,
           country: values.country,
+          savedZones: profile.location.savedZones,
         },
       });
       form.reset({

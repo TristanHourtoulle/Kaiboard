@@ -61,6 +61,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { AddToCalendar } from "./addToCalendar";
 import { PreviewDateTime } from "./PreviewDateTime";
 
 const formSchema = z.object({
@@ -243,6 +244,7 @@ export const MeetingCard = (props: MeetingCardProps) => {
         >
           Delete
         </Button>
+        <AddToCalendar meeting={props.meeting} utc={utc} />
         <Sheet>
           <SheetTrigger asChild>
             <Button variant="default">Open</Button>

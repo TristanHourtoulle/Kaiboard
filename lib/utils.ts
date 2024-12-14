@@ -113,8 +113,8 @@ export function convertTimeToUtc(time: string, utc: string): string {
   return `${adjustedHours}:${adjustedMinutes}`;
 }
 
-// Params received: ("2024-11-30T12:00:00+00:00", "utc+1")
-// Returns: "2024-11-30T13:00"
+// Example Params received: ("2024-11-30T12:00:00+00:00", "utc+1")
+// Returns for this example: "2024-11-30T13:00"
 export const convertDateTimeToUtc = (dateTime: string, utc: string): string => {
   // Validate input
   if (!dateTime || !utc) {

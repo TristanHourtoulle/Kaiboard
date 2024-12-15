@@ -14,6 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useTeam } from "@/hooks/useTeam";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { ChevronDown } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import z from "zod";
@@ -35,6 +36,7 @@ export const TeamInformation = (props: TeamInformationProps) => {
   const { team_id, loadTeam, user_id } = props;
   const [team, setTeam] = useState<any>(null);
   const { getTeamById, updateTeam } = useTeam();
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(true);
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -79,11 +81,24 @@ export const TeamInformation = (props: TeamInformationProps) => {
 
   return (
     <div className="flex flex-col px-6 py-4 rounded-lg border border-border w-full h-full">
-      <h2 className="font-bold text-lg">Team Informations</h2>
+      <div className="w-full flex items-center justify-between">
+        <h2 className="font-bold text-lg">Team Informations</h2>
+        <Button
+          size={"icon"}
+          variant={"ghost"}
+          onClick={() => setIsCollapsed(!isCollapsed)}
+        >
+          <ChevronDown
+            className={`transition-all ${
+              isCollapsed ? "rotate-0" : "rotate-180"
+            }`}
+          />
+        </Button>
+      </div>
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="grid gap-4 mt-4 w-full"
+          className={`grid gap-4 mt-4 w-full ${isCollapsed ? "hidden" : ""}`}
         >
           <FormField
             control={form.control}

@@ -13,9 +13,12 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useTeam } from "@/hooks/useTeam";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { ChevronDown } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import z from "zod";
+import { UserType, columns } from "./UserTable/Columns";
+import { DataTable } from "./UserTable/UserTable";
 
 const formSchema = z.object({
   mail: z.string().email("Invalid email address"),
@@ -33,6 +36,8 @@ export const TeamMembers = (props: TeamMembersProps) => {
   const [teamMembers, setTeamMembers] = useState<any[]>([]);
   const { getTeamMembers, addTeamMemberByEmail } = useTeam();
   const { getTeamById } = useTeam();
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(true);
+  const [teamMembersData, setTeamMembersData] = useState<UserType[]>([]);
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -43,7 +48,16 @@ export const TeamMembers = (props: TeamMembersProps) => {
   const fetchTeamMembers = async (team_id: string) => {
     try {
       const members = await getTeamMembers(team_id);
-      setTeamMembers(members);
+      await setTeamMembers(members);
+      // Set teamMembersData for the DataTable
+      setTeamMembersData(
+        members.map((member: any) => ({
+          id: member.user_id,
+          Fullname: `${member.profiles.firstname} ${member.profiles.name}`,
+          role: member.role,
+          email: member.profiles.email,
+        }))
+      );
     } catch (error: any) {
       console.error("Error fetching team members:", error.message);
     }
@@ -80,21 +94,33 @@ export const TeamMembers = (props: TeamMembersProps) => {
 
   return (
     <div className="flex flex-col px-6 py-4 rounded-lg border border-border w-full h-full">
-      <h2 className="font-bold text-lg">Team Members & Role</h2>
-      <div className="flex flex-col gap-2 items-center justify-center mt-4">
-        {teamMembers.map((member) => (
-          <div key={member.user_id} className="flex items-center gap-2">
-            <div>{member.profiles.firstname}</div>
-            <div>{member.profiles.name}</div>
-            <div>{member.profiles.email}</div>
-            <div>{member.role}</div>
-          </div>
-        ))}
+      <div className="w-full flex items-center justify-between">
+        <h2 className="font-bold text-lg">Team Members</h2>
+        <Button
+          size={"icon"}
+          variant={"ghost"}
+          onClick={() => setIsCollapsed(!isCollapsed)}
+        >
+          <ChevronDown
+            className={`transition-all ${
+              isCollapsed ? "rotate-0" : "rotate-180"
+            }`}
+          />
+        </Button>
+      </div>
+      <div
+        className={`flex flex-col gap-2 items-center justify-center mt-4 ${
+          isCollapsed ? "hidden" : ""
+        }`}
+      >
+        <DataTable columns={columns} data={teamMembersData} />
       </div>
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="flex items-end justify-between mt-auto w-full gap-3"
+          className={`flex items-end justify-between mt-auto w-full gap-3 ${
+            isCollapsed ? "hidden" : ""
+          }`}
         >
           <FormField
             control={form.control}

@@ -1,9 +1,11 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { useMeeting } from "@/hooks/useMeeting";
 import { useProfile } from "@/hooks/useProfile";
 import { useUser } from "@/hooks/useUser";
 import { splitDateTime } from "@/lib/utils";
+import { RefreshCcw } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import Skeleton from "react-loading-skeleton";
@@ -18,6 +20,9 @@ export default function Page() {
     utc: null,
     savedUtc: [],
   });
+  const [isFetching, setIsFetching] = useState(false);
+  const [coolDownFetch, setCoolDownFetch] = useState(false);
+  const [lastFetchTime, setLastFetchTime] = useState<Date | null>(null);
 
   useEffect(() => {
     if (!profile) return;
@@ -43,7 +48,14 @@ export default function Page() {
   }, [user, userLoading]);
 
   const loadMeetings = async () => {
-    fetchMeetingsList(user?.id);
+    setIsFetching(true);
+    setCoolDownFetch(true);
+    await fetchMeetingsList(user?.id);
+    setLastFetchTime(new Date());
+    setIsFetching(false);
+    setTimeout(() => {
+      setCoolDownFetch(false);
+    }, 10000);
   };
 
   useEffect(() => {
@@ -55,7 +67,7 @@ export default function Page() {
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 pt-0 w-full">
       {/* Header */}
-      <div className="flex items-center w-full mb-6">
+      <div className="flex items-center justify-between w-full mb-6">
         <div className="flex flex-col gap-1 items-start">
           <h1 className="text-2xl font-semibold">
             This is the meetings page,{" "}
@@ -65,10 +77,32 @@ export default function Page() {
             Here, you can create some meetings and invite some collaborators.
           </p>
         </div>
-        {!userLoading && user && userPreferences.utc && (
-          <CreateMeeting user={user} onMeetingCreated={loadMeetings} />
-        )}
+        <div className="flex gap-4 items-center">
+          <Button
+            variant="outline"
+            onClick={loadMeetings}
+            disabled={coolDownFetch}
+            className="py-2 max-w-sm"
+          >
+            {/* Utilise l'icon <RefreshCcw /> comme symbole dans le bouton refresh, quand isFetching est true alors fait que ce comp soit en spinner */}
+            <RefreshCcw
+              className={`h-5 w-5 ${isFetching ? "animate-spin" : ""}`}
+            />
+            {isFetching ? "Refreshing..." : "Refresh"}
+          </Button>
+
+          {!userLoading && user && userPreferences.utc && (
+            <CreateMeeting user={user} onMeetingCreated={loadMeetings} />
+          )}
+        </div>
       </div>
+
+      {/* Last Fetch Time */}
+      {lastFetchTime && (
+        <p className="text-sm text-gray-400">
+          Last updated: {lastFetchTime.toLocaleString()}
+        </p>
+      )}
 
       {/* Meetings Layout */}
       <div className="flex flex-wrap gap-4 items-center justify-start w-full">

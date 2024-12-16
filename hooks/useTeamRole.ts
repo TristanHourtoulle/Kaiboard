@@ -89,18 +89,29 @@ export function useTeamRole(team_id: string) {
   };
 
   // Supprimer plusieurs rôles et leurs relations associées dans team_member_roles
-  const deleteTeamRole = async (role_ids: number[]) => {
+  const deleteTeamRole = async (role_ids: (string | number)[]) => {
     try {
       setIsTeamRoleLoading(true);
       setError(null);
 
       if (role_ids.length === 0) return;
 
+      // Normaliser les IDs en `number` (si possible)
+      const normalizedRoleIds = role_ids.map((id) =>
+        typeof id === "string" ? parseInt(id, 10) : id
+      );
+
+      if (normalizedRoleIds.some(isNaN)) {
+        throw new Error(
+          "Invalid role IDs provided. Ensure all IDs are numbers or strings convertible to numbers."
+        );
+      }
+
       // Étape 1 : Supprimer toutes les entrées dans team_member_roles pour les role_ids spécifiés
       const { error: deleteRelationsError } = await supabase
         .from("team_member_roles")
         .delete()
-        .in("team_role_id", role_ids);
+        .in("team_role_id", normalizedRoleIds);
 
       if (deleteRelationsError) {
         throw deleteRelationsError;
@@ -110,7 +121,7 @@ export function useTeamRole(team_id: string) {
       const { error: deleteRolesError } = await supabase
         .from("team_roles")
         .delete()
-        .in("id", role_ids);
+        .in("id", normalizedRoleIds);
 
       if (deleteRolesError) {
         throw deleteRolesError;
@@ -118,7 +129,7 @@ export function useTeamRole(team_id: string) {
 
       // Mettre à jour l'état local en filtrant les rôles supprimés
       setRoles((prevRoles) =>
-        prevRoles.filter((role) => !role_ids.includes(role.id))
+        prevRoles.filter((role) => !normalizedRoleIds.includes(role.id))
       );
     } catch (err: any) {
       setError(err.message);

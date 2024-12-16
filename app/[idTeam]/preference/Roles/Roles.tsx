@@ -16,8 +16,14 @@ export type RolesProps = {
 
 export const Roles = (props: RolesProps) => {
   const { team_id, user_id } = props;
-  const { roles, error, isTeamRoleLoading, addTeamRole, deleteTeamRole } =
-    useTeamRole(team_id);
+  const {
+    roles,
+    error,
+    isTeamRoleLoading,
+    addTeamRole,
+    deleteTeamRole,
+    updateTeamRole,
+  } = useTeamRole(team_id);
   const { toast } = useToast();
   const [team, setTeam] = useState<any>(null);
   const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
@@ -51,7 +57,7 @@ export const Roles = (props: RolesProps) => {
           addTeamRole={addTeamRole}
         />
         <DataTable
-          columns={columns(deleteTeamRole)}
+          columns={columns(deleteTeamRole, updateTeamRole)}
           data={roles}
           deleteTeamRoles={deleteTeamRole}
         />

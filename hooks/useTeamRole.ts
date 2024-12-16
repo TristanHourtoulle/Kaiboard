@@ -74,6 +74,28 @@ export function useTeamRole(team_id: string) {
   );
 
   /**
+   * Update a role from a specific team
+   */
+  const updateTeamRole = async (id: string, updates: Partial<any>) => {
+    try {
+      const { error } = await supabase
+        .from("team_roles")
+        .update(updates)
+        .eq("id", id);
+
+      if (error) throw error;
+
+      setRoles((prevRoles) =>
+        prevRoles.map((role) =>
+          role.id === id ? { ...role, ...updates } : role
+        )
+      );
+    } catch (err: any) {
+      console.error("Error updating team role:", err.message);
+    }
+  };
+
+  /**
    * Delete a list of role from a specific team
    */
   const deleteTeamRole = useCallback(async (roleIds: string[]) => {
@@ -114,5 +136,6 @@ export function useTeamRole(team_id: string) {
     addTeamRole,
     fetchTeamRoles,
     deleteTeamRole,
+    updateTeamRole,
   };
 }

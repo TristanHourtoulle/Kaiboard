@@ -1,6 +1,7 @@
 import { RoleBadge } from "@/components/Teams/Role";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 import { ColumnDef } from "@tanstack/react-table";
 
 export type RoleType = {
@@ -10,7 +11,8 @@ export type RoleType = {
 };
 
 export const columns = (
-  deleteTeamRole: (ids: string[]) => void
+  deleteTeamRole: (ids: string[]) => void,
+  updateTeamRole: (id: string, updates: Partial<RoleType>) => void
 ): ColumnDef<RoleType>[] => [
   {
     id: "select",
@@ -37,10 +39,28 @@ export const columns = (
   {
     accessorKey: "title",
     header: "Title",
+    cell: ({ row }) => {
+      const { id, title } = row.original;
+      return (
+        <Input
+          defaultValue={title}
+          onBlur={(e) => updateTeamRole(id, { title: e.target.value })}
+        />
+      );
+    },
   },
   {
     accessorKey: "color",
     header: "Color",
+    cell: ({ row }) => {
+      const { id, color } = row.original;
+      return (
+        <Input
+          defaultValue={color}
+          onBlur={(e) => updateTeamRole(id, { color: e.target.value })}
+        />
+      );
+    },
   },
   {
     accessorKey: "preview",
@@ -59,7 +79,7 @@ export const columns = (
         <Button
           variant="destructive"
           size="sm"
-          onClick={() => deleteTeamRole([id])} // Appel de la fonction deleteTeamRole
+          onClick={() => deleteTeamRole([id])}
         >
           Delete
         </Button>

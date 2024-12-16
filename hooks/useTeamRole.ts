@@ -88,30 +88,45 @@ export function useTeamRole(team_id: string) {
     }
   };
 
-  /**
-   * Delete a list of role from a specific team
-   */
-  const deleteTeamRole = useCallback(async (roleIds: string[]) => {
-    setError(null);
-    setIsTeamRoleLoading(true);
-
+  // Supprimer plusieurs rôles et leurs relations associées dans team_member_roles
+  const deleteTeamRole = async (role_ids: number[]) => {
     try {
-      const { error } = await supabase
+      setIsTeamRoleLoading(true);
+      setError(null);
+
+      if (role_ids.length === 0) return;
+
+      // Étape 1 : Supprimer toutes les entrées dans team_member_roles pour les role_ids spécifiés
+      const { error: deleteRelationsError } = await supabase
+        .from("team_member_roles")
+        .delete()
+        .in("team_role_id", role_ids);
+
+      if (deleteRelationsError) {
+        throw deleteRelationsError;
+      }
+
+      // Étape 2 : Supprimer les rôles dans team_roles
+      const { error: deleteRolesError } = await supabase
         .from("team_roles")
         .delete()
-        .in("id", roleIds);
+        .in("id", role_ids);
 
-      if (error) throw new Error(error.message);
+      if (deleteRolesError) {
+        throw deleteRolesError;
+      }
 
-      setRoles((prev) => prev.filter((role) => !roleIds.includes(role.id)));
-      return true;
+      // Mettre à jour l'état local en filtrant les rôles supprimés
+      setRoles((prevRoles) =>
+        prevRoles.filter((role) => !role_ids.includes(role.id))
+      );
     } catch (err: any) {
       setError(err.message);
-      return false;
+      console.error("Erreur lors de la suppression des rôles :", err.message);
     } finally {
       setIsTeamRoleLoading(false);
     }
-  }, []);
+  };
 
   /**
    * Load roles when component mounts or team_id changes

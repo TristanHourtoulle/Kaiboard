@@ -11,7 +11,7 @@ export const RoleBadge = (props: RoleProps) => {
 
   return (
     <div
-      className={`inline-flex items-center justify-center px-6 py-1 rounded-full border hover:cursor-pointer group`}
+      className={`inline-flex items-center justify-center px-3 py-1 rounded-full border hover:cursor-pointer group`}
       style={{
         backgroundColor: `${color}20`, // Couleur de fond avec opacité (20%)
         borderColor: color, // Bordure de la couleur choisie
@@ -19,11 +19,11 @@ export const RoleBadge = (props: RoleProps) => {
       }}
       onClick={() => ctaDelete && ctaDelete(team_member_id!, team_role_id!)}
     >
-      <span className="text-sm" style={{ color }}>
+      <span className="text-xs" style={{ color }}>
         {title.toLowerCase()}
       </span>
       {ctaDelete && (
-        <span className="ml-2 text-red-500/50 group-hover:text-red-700">✖</span>
+        <span className="ml-2 text-red-500/50 group-hover:text-red-500">✖</span>
       )}
     </div>
   );

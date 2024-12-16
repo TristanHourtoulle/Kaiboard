@@ -16,7 +16,7 @@ import { useTeamMemberRoles } from "@/hooks/useTeamMemberRoles";
 import { useTeamRole } from "@/hooks/useTeamRole";
 import { supabase } from "@/lib/supabase";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, RefreshCcw } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import z from "zod";
@@ -42,6 +42,8 @@ export const TeamMembers = (props: TeamMembersProps) => {
   const [isCollapsed, setIsCollapsed] = useState<boolean>(true);
   const [teamMembersData, setTeamMembersData] = useState<UserType[]>([]);
   const { roles, fetchTeamRoles } = useTeamRole(team_id);
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+  const [refreshKey, setRefreshKey] = useState<number>(0);
   const {
     teamMemberRoles,
     addTeamMemberRole,
@@ -55,8 +57,13 @@ export const TeamMembers = (props: TeamMembersProps) => {
     },
   });
 
+  const refreshComponent = () => {
+    setRefreshKey((prevKey) => prevKey + 1); // Incrémente la clé pour remonter le composant
+  };
+
   const fetchTeamMembers = async () => {
     try {
+      setIsRefreshing(true);
       // Étape 1 : Récupère les membres
       const members = await getTeamMembers(team_id); // Table team_members
       console.log("Membres :", members);
@@ -101,8 +108,10 @@ export const TeamMembers = (props: TeamMembersProps) => {
 
       console.log("Membres avec rôles :", membersWithRoles);
       setTeamMembersData(membersWithRoles);
+      setIsRefreshing(false);
     } catch (error: any) {
       console.error("Error fetching team members:", error.message);
+      setIsRefreshing(false);
     }
   };
 
@@ -130,11 +139,34 @@ export const TeamMembers = (props: TeamMembersProps) => {
     }
   };
 
+  // Rafraîchit toutes les données
+  const refreshAllData = async () => {
+    setIsRefreshing(true);
+    try {
+      await Promise.all([
+        fetchTeamRoles(team_id),
+        fetchTeamMemberRoles(),
+        fetchTeamMembers(),
+      ]);
+      toast({ title: "Refreshed!", description: "All data has been updated." });
+    } catch (error) {
+      console.error("Failed to refresh data:", error);
+      toast({
+        title: "Error",
+        description: "Failed to refresh data.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  // Chargement initial des données
   useEffect(() => {
     if (team_id) {
       getTeamById(team_id, user_id).then((team: any) => {
         setTeam(team[0]);
-        fetchTeamMembers();
+        refreshAllData(); // Rafraîchissement initial
       });
     }
   }, [team_id]);
@@ -163,6 +195,18 @@ export const TeamMembers = (props: TeamMembersProps) => {
     <div className="flex flex-col px-6 py-4 rounded-lg border border-border w-full h-full">
       <div className="w-full flex items-center justify-between">
         <h2 className="font-bold text-lg">Team Members</h2>
+        <Button
+          className={`ml-auto mr-3 ${isCollapsed ? "hidden" : ""}`}
+          variant="outline"
+          onClick={refreshAllData}
+          hidden={!isCollapsed}
+          disabled={isRefreshing}
+        >
+          <RefreshCcw
+            className={`h-5 w-5 ${isRefreshing ? "animate-spin" : ""}`}
+          />
+          Refresh
+        </Button>
         <Button
           size={"icon"}
           variant={"ghost"}

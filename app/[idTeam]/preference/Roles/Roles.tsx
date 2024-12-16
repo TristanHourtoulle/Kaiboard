@@ -26,7 +26,7 @@ export const Roles = (props: RolesProps) => {
   } = useTeamRole(team_id);
   const { toast } = useToast();
   const [team, setTeam] = useState<any>(null);
-  const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(true);
 
   // Retour principal
   return (

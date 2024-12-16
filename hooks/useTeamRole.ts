@@ -39,8 +39,6 @@ export function useTeamRole(team_id: string) {
       setError(null);
       setIsTeamRoleLoading(true);
 
-      console.log("Je suis dans le addTeamRole dans le HOOKS");
-
       try {
         const { data: roleData, error } = await supabase
           .from("team_roles")
@@ -53,11 +51,6 @@ export function useTeamRole(team_id: string) {
           ])
           .select()
           .single();
-
-        console.log(
-          "Je suis dans le addTeamRole dans le HOOKS et après le call DB",
-          roleData
-        );
 
         if (error) throw new Error(error.message);
 

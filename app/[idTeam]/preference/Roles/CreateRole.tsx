@@ -38,7 +38,6 @@ export const CreateRole = (props: CreateRoleProps) => {
 
   const handleAddRole = async (data: any) => {
     try {
-      console.log("Je suis dans le handleAddRole");
       setIsAddingRole(true);
 
       const roleData = {

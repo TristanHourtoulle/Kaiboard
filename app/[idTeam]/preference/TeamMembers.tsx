@@ -12,6 +12,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useTeam } from "@/hooks/useTeam";
+import { useTeamMemberRoles } from "@/hooks/useTeamMemberRoles";
+import { useTeamRole } from "@/hooks/useTeamRole";
+import { supabase } from "@/lib/supabase";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ChevronDown } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -38,6 +41,13 @@ export const TeamMembers = (props: TeamMembersProps) => {
   const { getTeamById } = useTeam();
   const [isCollapsed, setIsCollapsed] = useState<boolean>(true);
   const [teamMembersData, setTeamMembersData] = useState<UserType[]>([]);
+  const { roles, fetchTeamRoles } = useTeamRole(team_id);
+  const {
+    teamMemberRoles,
+    addTeamMemberRole,
+    deleteTeamMemberRole,
+    fetchTeamMemberRoles,
+  } = useTeamMemberRoles(team_id);
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -45,21 +55,78 @@ export const TeamMembers = (props: TeamMembersProps) => {
     },
   });
 
-  const fetchTeamMembers = async (team_id: string) => {
+  const fetchTeamMembers = async () => {
     try {
-      const members = await getTeamMembers(team_id);
-      await setTeamMembers(members);
-      // Set teamMembersData for the DataTable
-      setTeamMembersData(
-        members.map((member: any) => ({
-          id: member.user_id,
-          Fullname: `${member.profiles.firstname} ${member.profiles.name}`,
-          role: member.role,
-          email: member.profiles.email,
-        }))
-      );
+      // Étape 1 : Récupère les membres
+      const members = await getTeamMembers(team_id); // Table team_members
+      console.log("Membres :", members);
+
+      // Étape 2 : Récupère les relations membres-rôles
+      const { data: teamMemberRoles, error: roleRelationError } = await supabase
+        .from("team_member_roles")
+        .select("*")
+        .in(
+          "team_member_id",
+          members.map((m: any) => m.id)
+        );
+
+      if (roleRelationError) throw roleRelationError;
+      console.log("Relations membres-rôles :", teamMemberRoles);
+
+      // Étape 3 : Récupère les rôles
+      const { data: roles, error: rolesError } = await supabase
+        .from("team_roles")
+        .select("id, title, color") // Récupère la couleur en plus du titre et de l'id
+        .eq("team_id", team_id);
+
+      if (rolesError) throw rolesError;
+      console.log("Rôles :", roles);
+
+      // Étape 4 : Associe les rôles aux membres avec la couleur
+      const membersWithRoles = members.map((member: any) => ({
+        id: member.id,
+        Fullname: `${member.profiles.firstname} ${member.profiles.name}`,
+        email: member.profiles.email,
+        roles: teamMemberRoles
+          .filter((rel) => rel.team_member_id === member.id)
+          .map((rel) => {
+            const role = roles.find((r) => r.id === rel.team_role_id);
+            return {
+              id: rel.team_role_id,
+              title: role?.title || "Unknown",
+              color: role?.color || "#ccc", // Utilise une couleur par défaut si non définie
+            };
+          }),
+      }));
+
+      console.log("Membres avec rôles :", membersWithRoles);
+      setTeamMembersData(membersWithRoles);
     } catch (error: any) {
       console.error("Error fetching team members:", error.message);
+    }
+  };
+
+  // Ajouter un rôle à un utilisateur
+  const addRole = async (member_id: string, roleId: number) => {
+    try {
+      await addTeamMemberRole(Number(member_id), roleId);
+      fetchTeamMembers(); // Rafraîchir les données
+      toast({ title: "Success", description: "Role added successfully" });
+      return;
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message });
+      return;
+    }
+  };
+
+  // Supprimer un rôle d'un utilisateur
+  const removeRole = async (userId: string, roleId: number) => {
+    try {
+      await deleteTeamMemberRole(userId, roleId);
+      fetchTeamMembers(); // Rafraîchir les données
+      toast({ title: "Success", description: "Role removed successfully" });
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message });
     }
   };
 
@@ -67,7 +134,7 @@ export const TeamMembers = (props: TeamMembersProps) => {
     if (team_id) {
       getTeamById(team_id, user_id).then((team: any) => {
         setTeam(team[0]);
-        fetchTeamMembers(team[0].team_id);
+        fetchTeamMembers();
       });
     }
   }, [team_id]);
@@ -75,7 +142,7 @@ export const TeamMembers = (props: TeamMembersProps) => {
   const onSubmit = async (data: any) => {
     try {
       await addTeamMemberByEmail(team_id, data.mail, "member");
-      await fetchTeamMembers(team_id);
+      await fetchTeamMembers();
       form.reset();
       toast({
         title: "Success",
@@ -113,7 +180,10 @@ export const TeamMembers = (props: TeamMembersProps) => {
           isCollapsed ? "hidden" : ""
         }`}
       >
-        <DataTable columns={columns} data={teamMembersData} />
+        <DataTable
+          columns={columns(addRole, removeRole, roles)}
+          data={teamMembersData}
+        />
       </div>
       <Form {...form}>
         <form

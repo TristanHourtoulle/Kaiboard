@@ -147,6 +147,7 @@ export const useTeam = () => {
       .from("team_members")
       .select(
         `
+        id,
         user_id,
         role,
         profiles (

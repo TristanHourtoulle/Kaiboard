@@ -10,9 +10,39 @@ export interface Sprint {
   project_id: number;
 }
 
+export interface Task {
+  id: number;
+  created_at: string;
+  title: string;
+  content: string;
+  status: {
+    id: number;
+    title: string;
+    description: string;
+    order: number;
+  };
+  sprint?: {
+    id: number;
+    title: string;
+    start_date: string;
+    end_date: string;
+  };
+  profiles: [
+    {
+      id: number;
+      name: string;
+      firstname: string;
+      email: string;
+    }
+  ];
+  project_id: number;
+  team_id: number;
+}
+
 export function useProject(idTeam: string) {
   const [projects, setProjects] = useState<any[]>([]);
   const [sprints, setSprints] = useState<Record<number, Sprint[]>>({}); // Sprints par projet ID
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [isProjectLoading, setIsProjectLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -171,17 +201,135 @@ export function useProject(idTeam: string) {
     }
   };
 
+  const fetchProjectStatus = async (project_id: string) => {
+    try {
+      const parsedProjectId = parseInt(project_id, 10); // Conversion explicite
+
+      const { data, error } = await supabase
+        .from("project_status")
+        .select("*")
+        .eq("project_id", parsedProjectId);
+
+      if (error) throw error;
+
+      return data;
+    } catch (err: any) {
+      console.error(err.message);
+      setError(err.message);
+    }
+  };
+
+  const fetchTasks = async (projectId: string) => {
+    try {
+      const { data: tasks, error } = await supabase
+        .from("project_tasks")
+        .select(
+          `*, 
+          project_sprints(*), 
+          project_task_users!project_task_users_task_id_fkey(*), 
+          project_task_roles!project_task_roles_task_id_fkey(*),
+          project_status(*)
+          `
+        )
+        .eq("project_id", projectId);
+
+      if (error) throw error;
+
+      const formattedTasks: Task[] = tasks.map((task: any) => ({
+        id: task.id,
+        created_at: task.created_at,
+        title: task.title,
+        content: task.content,
+        status: task.project_status,
+        sprint: task.project_sprints,
+        profiles: task.project_task_users, // Relation désambiguïsée
+        roles: task.project_task_roles, // Relation désambiguïsée
+        project_id: task.project_id,
+        team_id: task.team_id,
+      }));
+
+      setTasks(formattedTasks);
+    } catch (err: any) {
+      setError(err.message);
+    }
+  };
+
+  // 9. Créer une tâche avec relations vers d'autres tables
+  const createTask = async (projectId: string, taskData: any) => {
+    try {
+      // Étape 1 : Préparation des données
+      const { title, content, status, sprint_id, profiles, roles } = taskData;
+
+      // Étape 2 : Insérer la tâche principale dans la table project_tasks
+      const { data: task, error: taskError } = await supabase
+        .from("project_tasks")
+        .insert([
+          {
+            title,
+            content,
+            status_id: status, // Assurez-vous que 'status' contient un id correct
+            sprint_id: sprint_id || null, // Optionnel
+            project_id: projectId,
+          },
+        ])
+        .select()
+        .single();
+
+      if (taskError) throw taskError;
+
+      // Étape 3 : Insérer les relations avec les assignees (profiles)
+      if (profiles && profiles.length > 0) {
+        const profileRelations = profiles.map((profileId: string) => ({
+          task_id: task.id,
+          profile_id: profileId,
+        }));
+
+        const { error: profileError } = await supabase
+          .from("project_task_users")
+          .insert(profileRelations);
+
+        if (profileError) throw profileError;
+      }
+
+      // Étape 4 : Insérer les relations avec les rôles
+      if (roles && roles.length > 0) {
+        const roleRelations = roles.map((roleId: number) => ({
+          task_id: task.id,
+          role_id: roleId,
+        }));
+
+        const { error: roleError } = await supabase
+          .from("project_task_roles")
+          .insert(roleRelations);
+
+        if (roleError) throw roleError;
+      }
+    } catch (error: any) {
+      console.error("Error creating task:", error.message);
+      throw error;
+    }
+  };
+
   return {
+    // Variables
     projects,
     sprints,
+    tasks,
     isProjectLoading,
     error,
+    // Projects
     fetchProjects,
     fetchProjectById,
     addProject,
     deleteProject,
+    // Sprints
     addSprint,
     deleteSprint,
     updateSprint,
+    // Tasks
+    fetchTasks,
+    createTask,
+    // Status
+    fetchProjectStatus,
   };
 }

@@ -1,6 +1,8 @@
 "use client";
 
 import { useProject } from "@/hooks/useProject";
+import { useTeam } from "@/hooks/useTeam";
+import { useTeamRole } from "@/hooks/useTeamRole";
 import { useEffect, useState } from "react";
 import { FilesSection as Files } from "./Files/FilesSection";
 import { OverviewSection as Overview } from "./Overview/OverviewSection";
@@ -12,10 +14,23 @@ export default function PageHome({
 }: {
   params: { idTeam: string; idProject: string };
 }) {
-  const { projects, fetchProjectById, addSprint, deleteSprint, updateSprint } =
-    useProject(idTeam);
+  const {
+    projects,
+    tasks,
+    fetchProjectById,
+    addSprint,
+    deleteSprint,
+    updateSprint,
+    fetchTasks,
+    createTask,
+    fetchProjectStatus,
+  } = useProject(idTeam);
+  const { roles, fetchTeamRoles } = useTeamRole(idTeam);
+  const { getTeamMembers } = useTeam();
   const [project, setProject] = useState<any | null>(null);
   const [sprints, setSprints] = useState<any[]>([]);
+  const [profiles, setProfiles] = useState<any[]>([]);
+  const [projectStatus, setProjectStatus] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState("Overview");
 
   const handleRefresh = () => {
@@ -23,6 +38,7 @@ export default function PageHome({
       setProject(data);
       setSprints(data.project_sprints);
     });
+    fetchTasks(idProject);
   };
 
   const handleDeleteSprint = async (id_sprint: string, id_project: string) => {
@@ -49,7 +65,22 @@ export default function PageHome({
       component: <Overview project={project} />,
       icon: "📋",
     },
-    { title: "Tasks", component: <Tasks project={project} />, icon: "🎯" },
+    {
+      title: "Tasks",
+      component: (
+        <Tasks
+          project={project}
+          project_status={projectStatus}
+          roles={roles}
+          sprints={sprints}
+          profiles={profiles}
+          tasks={tasks}
+          fetchTasks={fetchTasks}
+          createTask={createTask}
+        />
+      ),
+      icon: "🎯",
+    },
     {
       title: "Sprints",
       component: (
@@ -77,6 +108,13 @@ export default function PageHome({
         setProject(data);
         setSprints(data.project_sprints);
       });
+      fetchProjectStatus(idProject).then((data: any) => {
+        setProjectStatus(data);
+      });
+      getTeamMembers(idTeam).then((data) => {
+        setProfiles(data);
+      });
+      fetchTasks(idProject);
     } else {
       console.error("No project id provided, but it should be provided.");
     }

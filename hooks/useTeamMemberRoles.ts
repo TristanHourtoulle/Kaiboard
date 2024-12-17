@@ -32,11 +32,6 @@ export function useTeamMemberRoles(team_id: string) {
         )
         .eq("team_members.team_id", team_id); // Filtre par team_id
 
-      console.log("Réponse Supabase de fetchTeamMemberRoles :", {
-        data,
-        error,
-      });
-
       if (error) throw error;
 
       // Formate les données si besoin
@@ -66,14 +61,6 @@ export function useTeamMemberRoles(team_id: string) {
       setIsLoading(true);
       setError(null);
 
-      console.log(
-        "Paramètres dans addTeamrole HOOKS:",
-        team_member_id,
-        typeof team_member_id,
-        team_role_id,
-        typeof team_role_id
-      ); // Console log les paramètres avec leur type
-
       // Console log les paramètres avec leur type
 
       if (isNaN(team_member_id) || isNaN(team_role_id)) {
@@ -87,8 +74,6 @@ export function useTeamMemberRoles(team_id: string) {
         .insert([{ team_member_id, team_role_id }]) // team_member_id doit être un nombre
         .select()
         .single();
-
-      console.log("Réponse Supabase :", { data, error });
 
       if (error) throw error;
 

@@ -50,7 +50,6 @@ export const CreateProject = (props: CreateProjectProps) => {
 
   const onSubmit = async (data: any) => {
     try {
-      console.log(data);
       // Call the addProject function from useProject hook
       const dataToSend = {
         team_id,
@@ -63,6 +62,8 @@ export const CreateProject = (props: CreateProjectProps) => {
       refreshFunction();
       // Close the dialog
       setIsDialogOpen(false);
+      // Reset the form
+      form.reset();
     } catch (error: any) {
       console.error("Error creating project:", error.message);
     }

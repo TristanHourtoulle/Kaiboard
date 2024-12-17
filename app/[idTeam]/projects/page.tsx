@@ -4,13 +4,17 @@ import { Button } from "@/components/ui/button";
 import { useProject } from "@/hooks/useProject";
 import { RefreshCcw } from "lucide-react";
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CreateProject } from "./CreateProject";
+import { ProjectCard } from "./ProjectCard";
 
 export default function Projects() {
   const params = useParams();
-  const [idTeam, setIdTeam] = useState<string>(params.idTeam as string);
+  const idTeam = Array.isArray(params?.idTeam)
+    ? params.idTeam[0]
+    : params?.idTeam || ""; // Sécurisation de idTeam
   const [isFetching, setIsFetching] = useState<boolean>(false);
+
   const {
     projects,
     isProjectLoading,
@@ -18,13 +22,23 @@ export default function Projects() {
     fetchProjects,
     addProject,
     deleteProject,
-  } = useProject(idTeam);
+  } = useProject(idTeam || "");
+
+  const addProjectProcess = async (data: any) => {
+    await addProject(data);
+    await refreshProjects();
+  };
 
   const refreshProjects = async () => {
+    if (!idTeam) return; // Empêche l'appel si idTeam est vide
     setIsFetching(true);
     await fetchProjects(idTeam);
     setIsFetching(false);
   };
+
+  useEffect(() => {
+    refreshProjects();
+  }, [idTeam]);
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 pt-0 w-full">
@@ -43,7 +57,6 @@ export default function Projects() {
             disabled={isFetching}
             className="py-2 max-w-sm"
           >
-            {/* Utilise l'icon <RefreshCcw /> comme symbole dans le bouton refresh, quand isFetching est true alors fait que ce comp soit en spinner */}
             <RefreshCcw
               className={`h-5 w-5 ${isFetching ? "animate-spin" : ""}`}
             />
@@ -52,9 +65,25 @@ export default function Projects() {
           <CreateProject
             team_id={idTeam}
             refreshFunction={refreshProjects}
-            addFunction={addProject}
+            addFunction={addProjectProcess}
           />
         </div>
+      </div>
+
+      {/* Project Cards */}
+      <div className="flex flex-wrap gap-4 items-center justify-start w-full">
+        {projects.length > 0 ? (
+          projects.map((project: any) => (
+            <ProjectCard
+              key={project.id}
+              project={project}
+              team_id={idTeam}
+              deleteProject={deleteProject}
+            />
+          ))
+        ) : (
+          <p>No projects found</p>
+        )}
       </div>
     </div>
   );

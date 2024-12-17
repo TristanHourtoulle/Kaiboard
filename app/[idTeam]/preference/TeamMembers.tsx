@@ -66,7 +66,6 @@ export const TeamMembers = (props: TeamMembersProps) => {
       setIsRefreshing(true);
       // Étape 1 : Récupère les membres
       const members = await getTeamMembers(team_id); // Table team_members
-      console.log("Membres :", members);
 
       // Étape 2 : Récupère les relations membres-rôles
       const { data: teamMemberRoles, error: roleRelationError } = await supabase
@@ -78,7 +77,6 @@ export const TeamMembers = (props: TeamMembersProps) => {
         );
 
       if (roleRelationError) throw roleRelationError;
-      console.log("Relations membres-rôles :", teamMemberRoles);
 
       // Étape 3 : Récupère les rôles
       const { data: roles, error: rolesError } = await supabase
@@ -87,7 +85,6 @@ export const TeamMembers = (props: TeamMembersProps) => {
         .eq("team_id", team_id);
 
       if (rolesError) throw rolesError;
-      console.log("Rôles :", roles);
 
       // Étape 4 : Associe les rôles aux membres avec la couleur
       const membersWithRoles = members.map((member: any) => ({
@@ -106,7 +103,6 @@ export const TeamMembers = (props: TeamMembersProps) => {
           }),
       }));
 
-      console.log("Membres avec rôles :", membersWithRoles);
       setTeamMembersData(membersWithRoles);
       setIsRefreshing(false);
     } catch (error: any) {

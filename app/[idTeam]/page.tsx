@@ -46,24 +46,20 @@ export default function TeamHome({
   useEffect(() => {
     if (!loading && idTeam && user?.id) {
       getTeamById(idTeam, user.id).then((data: any) => {
-        if (!data) {
-          router.push("/teams");
-        } else {
-          setTeam(data[0].teams); // Set the team data if available
-          setMember({
-            id_team: data[0].team_id,
-            role: data[0].role,
-            join_at: data[0].join_at,
-            id_user: user.id,
-          });
-          getTeamMembers(idTeam).then((members: any) => {
-            setAllMembers(members);
-          });
-          fetchProfile(user.id);
-        }
+        setTeam(data[0].teams); // Set the team data if available
+        setMember({
+          id_team: data[0].team_id,
+          role: data[0].role,
+          join_at: data[0].join_at,
+          id_user: user.id,
+        });
+        getTeamMembers(idTeam).then((members: any) => {
+          setAllMembers(members);
+        });
+        fetchProfile(user.id);
       });
     }
-  }, [user]);
+  }, [user, idTeam]);
 
   // Early return for loading state
   if (loading || !user || !profile || !team) {

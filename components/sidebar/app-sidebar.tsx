@@ -74,19 +74,16 @@ export function AppSidebar() {
   const [links, setLinks] = useState(PersonnalLinks);
 
   function updateLinks() {
-
     if (selectedTeam && selectedTeam.team_id === -1) {
-      // Nous sommes dans l'espace personnel, alors supprimez l'ID de l'équipe des liens
+      // Espace personnel, met à jour les liens
       setLinks(PersonnalLinks);
-      router.push("/");
     } else if (selectedTeam) {
-      // Nous sommes dans une équipe, ajoutez l'ID de l'équipe aux liens
+      // Liens d'équipe avec l'ID de l'équipe
       const TeamLinks = PersonnalLinks.map((link) => ({
         ...link,
         href: `/${selectedTeam.team_id}/${link.href.replace("/", "")}`,
       }));
       setLinks(TeamLinks);
-      router.push(`/${selectedTeam.team_id}`);
     }
   }
 

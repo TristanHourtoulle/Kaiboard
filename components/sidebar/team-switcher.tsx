@@ -72,7 +72,6 @@ export function TeamSwitcher({
     if (idTeam !== undefined && idTeam === "-1") {
       setActiveTeam(teams[0]);
       setSelectedTeam(teams[0]);
-      router.push(`/`);
       return;
     }
     if (idTeam) {
@@ -82,10 +81,10 @@ export function TeamSwitcher({
 
       if (teamFromPath) {
         setActiveTeam(teamFromPath);
-        router.push(`/` + teamFromPath.team_id);
+        setSelectedTeam(teamFromPath);
       } else {
         setActiveTeam(teams[0]);
-        router.push(`/`);
+        setSelectedTeam(teams[0]);
       }
     }
   };
@@ -161,6 +160,11 @@ export function TeamSwitcher({
                 key={team.name}
                 onClick={() => {
                   setNewActiveTeam(teams, team.team_id.toString());
+                  if (team.team_id !== -1) {
+                    router.push(`/${team.team_id}`);
+                  } else {
+                    router.push("/");
+                  }
                 }}
                 className="gap-2 p-2"
               >

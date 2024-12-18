@@ -121,7 +121,7 @@ export default function PageHome({
   }, [idProject]);
 
   return (
-    <div className="flex flex-col w-full p-4 pt-0 text-white">
+    <div className="flex flex-col w-full p-4 pt-0 text-white overflow-x-hidden">
       {/* Header */}
       <div className="mb-4">
         <h1 className="text-2xl font-bold">Let's work on {project?.title}</h1>
@@ -151,7 +151,7 @@ export default function PageHome({
       </div>
 
       {/* Active Tab Content */}
-      <div className="mt-5  ">
+      <div className="mt-5">
         {projectTabs.find((tab) => tab.title === activeTab)?.component}
       </div>
     </div>

@@ -2,7 +2,7 @@
 
 import { RoleBadge } from "@/components/Teams/Role";
 import { SprintBadge } from "@/components/Teams/SprintBadge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useProfile } from "@/hooks/useProfile";
 import { IterationCcw } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -63,12 +63,12 @@ export const TaskCard = (props: TaskCardProps) => {
         </div>
 
         {/* Assigned profiles */}
-        <div className="flex -space-x-3 *:ring *:ring-sidebar">
+        <div className="flex -space-x-6">
           {task.profiles.length > 0 &&
             profilesList.map((profile: any) => (
-              <Avatar className="h-8 w-8 rounded-lg">
-                {/* <AvatarImage src={user.avatar} alt={user.name} /> */}
-                <AvatarFallback className="rounded-lg">
+              <Avatar className="h-10 w-10 rounded-full">
+                <AvatarImage src={profile.avatar_url} alt={profile.name} />
+                <AvatarFallback className="rounded-full">
                   {profile.firstname[0]}
                   {profile.name[0]}
                 </AvatarFallback>

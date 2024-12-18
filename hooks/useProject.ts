@@ -208,14 +208,15 @@ export function useProject(idTeam: string) {
       const { data, error } = await supabase
         .from("project_status")
         .select("*")
-        .eq("project_id", parsedProjectId);
+        .eq("project_id", parsedProjectId)
+        .order("order", { ascending: true }); // Tri par la colonne 'order' en ordre croissant
 
       if (error) throw error;
 
       return data;
     } catch (err: any) {
       console.error(err.message);
-      setError(err.message);
+      setError(err.message); // Assurez-vous que setError est défini dans votre composant ou contexte
     }
   };
 

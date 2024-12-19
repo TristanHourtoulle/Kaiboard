@@ -4,6 +4,21 @@ import { useState } from "react";
 
 export const useProfile = () => {
   const [profile, setProfile] = useState<any | null>(null);
+  const [profilesList, setProfilesList] = useState<any[]>([]);
+
+  const getListProfiles = async (profileIds: string[]) => {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select()
+      .in("id", profileIds);
+
+    if (error) {
+      console.error("Error fetching profiles:", error.message);
+      throw new Error(error.message);
+    }
+
+    setProfilesList(data);
+  };
 
   const getProfile = async (userId: string) => {
     const { data, error } = await supabase
@@ -36,7 +51,9 @@ export const useProfile = () => {
 
   return {
     profile,
+    profilesList,
     getProfile,
     updateProfile,
+    getListProfiles,
   };
 };

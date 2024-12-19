@@ -222,6 +222,22 @@ export const combineDateTime = (date: Date, time: string, timezone: string) => {
   return `${dateStr}T${timeStr}${timezoneStr}`;
 };
 
+export const getDaysLeft = (
+  storedStartDate: string,
+  storedEndDate: string
+): string => {
+  const startDate = new Date(storedStartDate);
+  const endDate = new Date(storedEndDate);
+  const today = new Date();
+
+  // Calculer la différence en millisecondes entre aujourd'hui et la date de fin
+  const timeDifference = endDate.getTime() - today.getTime();
+  const daysLeft = Math.ceil(timeDifference / (1000 * 3600 * 24));
+
+  // Vérifier si la date de fin est passée
+  return daysLeft > 0 ? `${daysLeft} day(s)` : "Ended";
+};
+
 // Params received: ("2024-11-30T13:00")
 // returns: {date: "30 November 2024", time: "13:00"}
 export const formatDateTime = (

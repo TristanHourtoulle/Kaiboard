@@ -7,6 +7,7 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { TeamInformation } from "./TeamInformation";
 import { TeamMembers } from "./TeamMembers";
+import { Roles } from "./Roles/Roles";
 
 export default function Preference() {
   const { getTeamById } = useTeam();
@@ -49,7 +50,7 @@ export default function Preference() {
       {user && profile && team ? (
         <div className="flex flex-col gap-4 p-4 pt-0 w-full">
           <h1 className="text-2xl font-semibold">Preference</h1>
-          <div className="flex items-stretch gap-6 w-full flex-wrap lg:flex-nowrap">
+          <div className="flex flex-col items-stretch gap-6 w-full flex-wrap lg:flex-nowrap">
             <div className="flex-1 flex">
               <TeamInformation
                 team_id={team[0].team_id}
@@ -59,6 +60,9 @@ export default function Preference() {
             </div>
             <div className="flex-1 flex">
               <TeamMembers team_id={team[0].team_id} user_id={user.id} />
+            </div>
+            <div className="flex-1 flex">
+              <Roles team_id={team[0].team_id} user_id={user.id} />
             </div>
           </div>
         </div>

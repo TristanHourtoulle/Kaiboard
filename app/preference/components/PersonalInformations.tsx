@@ -1,5 +1,6 @@
 "use client";
 
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"; // Import du composant Avatar
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -18,7 +19,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { avatarsData } from "./AvatarData";
 
+// Schéma Zod avec ajout du champ avatar
 const formSchema = z.object({
   username: z
     .string()
@@ -28,6 +31,7 @@ const formSchema = z.object({
     }),
   name: z.string().min(1, { message: "Name is required." }),
   firstname: z.string().min(1, { message: "Firstname is required." }),
+  avatar_url: z.string().min(1, { message: "Avatar is required." }), // Champ pour l'avatar
 });
 
 export const PersonalInformations = () => {
@@ -36,6 +40,7 @@ export const PersonalInformations = () => {
   const { user, loading: userLoading } = useUser();
   const [userId, setUserId] = useState<string | null>(null);
   const { toast } = useToast();
+  const [avatars, setAvatars] = useState<any[]>(avatarsData);
 
   const fetchProfile = async (userId: string) => {
     try {
@@ -58,12 +63,14 @@ export const PersonalInformations = () => {
       form.reset(profile);
     }
   }, [profile]);
+
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       username: profile?.username || "",
       name: profile?.name || "",
       firstname: profile?.firstname || "",
+      avatar_url: profile?.avatar || avatars[0], // Valeur par défaut pour l'avatar
     },
   });
 
@@ -139,7 +146,40 @@ export const PersonalInformations = () => {
               </FormItem>
             )}
           />
-          <FormMessage />
+
+          {/* Section pour choisir un avatar */}
+          <FormField
+            control={form.control}
+            name="avatar_url"
+            render={({ field }) => (
+              <FormItem className="w-full">
+                <FormLabel>Avatar</FormLabel>
+                <div className="flex items-center gap-4 flex-wrap rounded-md p-4 border border-border">
+                  {avatars.map((avatar) => (
+                    <div
+                      key={avatar.name}
+                      onClick={() => form.setValue("avatar_url", avatar.href)} // Mettre à jour la valeur sélectionnée
+                      className={`cursor-pointer rounded-full ${
+                        field.value === avatar.href ? "ring-2 ring-primary" : ""
+                      }`} // Ajouter une bordure si sélectionné
+                    >
+                      <Avatar className="w-16 h-16 hover:scale-110 transition-transform">
+                        <AvatarImage src={avatar.href} alt={avatar.name} />
+                        <AvatarFallback>
+                          {/* Afficher un fallback si l'image ne charge pas */}
+                          {avatar.name}
+                        </AvatarFallback>
+                      </Avatar>
+                    </div>
+                  ))}
+                </div>
+                <FormDescription>Select your avatar.</FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Bouton de soumission */}
           <Button type="submit" className="w-full">
             Save
           </Button>

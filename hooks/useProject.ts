@@ -314,6 +314,125 @@ export function useProject(idTeam: string) {
     }
   };
 
+  const updateTask = async (taskId: string, taskData: any) => {
+    try {
+      // Step 1: Prepare the data
+      const { title, content, status, sprint_id, profiles, roles } = taskData;
+
+      // Step 2: Update the task in project_tasks table
+      const { data: task, error: taskError } = await supabase
+        .from("project_tasks")
+        .update({
+          title,
+          content,
+          status_id: status,
+          sprint_id: sprint_id || null,
+        })
+        .eq("id", taskId)
+        .select()
+        .single();
+
+      if (taskError) throw taskError;
+
+      // Step 3: Update the relations with assignees (profiles)
+      if (profiles) {
+        // Fetch existing relations
+        const { data: existingProfiles, error: fetchProfilesError } =
+          await supabase
+            .from("project_task_users")
+            .select("profile_id")
+            .eq("task_id", task.id);
+
+        if (fetchProfilesError) throw fetchProfilesError;
+
+        const existingProfileIds =
+          existingProfiles?.map((p) => p.profile_id) || [];
+
+        // Determine profiles to add and remove
+        const profilesToAdd = profiles.filter(
+          (profileId: string) => !existingProfileIds.includes(profileId)
+        );
+        const profilesToRemove = existingProfileIds.filter(
+          (profileId: string) => !profiles.includes(profileId)
+        );
+
+        // Add new profiles
+        if (profilesToAdd.length > 0) {
+          const newProfileRelations = profilesToAdd.map(
+            (profileId: string) => ({
+              task_id: task.id,
+              profile_id: profileId,
+            })
+          );
+          const { error: profileError } = await supabase
+            .from("project_task_users")
+            .upsert(newProfileRelations);
+
+          if (profileError) throw profileError;
+        }
+
+        // Remove old profiles
+        if (profilesToRemove.length > 0) {
+          const { error: removeProfileError } = await supabase
+            .from("project_task_users")
+            .delete()
+            .in("profile_id", profilesToRemove)
+            .eq("task_id", task.id);
+
+          if (removeProfileError) throw removeProfileError;
+        }
+      }
+
+      // Step 4: Update the relations with roles
+      if (roles) {
+        // Fetch existing relations
+        const { data: existingRoles, error: fetchRolesError } = await supabase
+          .from("project_task_roles")
+          .select("role_id")
+          .eq("task_id", task.id);
+
+        if (fetchRolesError) throw fetchRolesError;
+
+        const existingRoleIds = existingRoles?.map((r) => r.role_id) || [];
+
+        // Determine roles to add and remove
+        const rolesToAdd = roles.filter(
+          (roleId: number) => !existingRoleIds.includes(roleId)
+        );
+        const rolesToRemove = existingRoleIds.filter(
+          (roleId: number) => !roles.includes(roleId)
+        );
+
+        // Add new roles
+        if (rolesToAdd.length > 0) {
+          const newRoleRelations = rolesToAdd.map((roleId: number) => ({
+            task_id: task.id,
+            role_id: roleId,
+          }));
+          const { error: roleError } = await supabase
+            .from("project_task_roles")
+            .upsert(newRoleRelations);
+
+          if (roleError) throw roleError;
+        }
+
+        // Remove old roles
+        if (rolesToRemove.length > 0) {
+          const { error: removeRoleError } = await supabase
+            .from("project_task_roles")
+            .delete()
+            .in("role_id", rolesToRemove)
+            .eq("task_id", task.id);
+
+          if (removeRoleError) throw removeRoleError;
+        }
+      }
+    } catch (error: any) {
+      console.error("Error updating task:", error.message);
+      throw error;
+    }
+  };
+
   // Get all tasks from all projects from a team that are assigned to a specific profileId (uuid)
   const fetchTasksByProfileId = async (profileId: string) => {
     try {
@@ -386,6 +505,7 @@ export function useProject(idTeam: string) {
     fetchTasksByProfileId,
     fetchTasks,
     createTask,
+    updateTask,
     // Status
     fetchProjectStatus,
   };

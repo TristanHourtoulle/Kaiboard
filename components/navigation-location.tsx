@@ -40,6 +40,8 @@ export function HeaderBreadcrumb() {
 
               return (
                 <React.Fragment key={href}>
+                  {/* Ajouter un séparateur avant le premier segment si c'est un nombre */}
+                  {index === 0 && <BreadcrumbSeparator />}
                   <BreadcrumbItem>
                     {isLast ? (
                       <BreadcrumbPage>{formattedSegment}</BreadcrumbPage>
@@ -49,7 +51,7 @@ export function HeaderBreadcrumb() {
                       </BreadcrumbLink>
                     )}
                   </BreadcrumbItem>
-                  {/* Séparateur placé en dehors de <li> */}
+                  {/* Séparateur placé en dehors de <li>, sauf pour le dernier élément */}
                   {!isLast && <BreadcrumbSeparator />}
                 </React.Fragment>
               );

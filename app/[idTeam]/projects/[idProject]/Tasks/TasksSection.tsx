@@ -20,6 +20,7 @@ export type TasksSectionProps = {
   profiles: any[];
   fetchTasks: (id_project: string) => void;
   createTask: (id_project: string, data: any) => void;
+  updateTask: (id_task: string, data: any) => void;
 };
 
 export const TasksSection = (props: TasksSectionProps) => {
@@ -32,6 +33,7 @@ export const TasksSection = (props: TasksSectionProps) => {
     tasks,
     fetchTasks,
     createTask,
+    updateTask,
   } = props;
 
   useEffect(() => {
@@ -92,6 +94,9 @@ export const TasksSection = (props: TasksSectionProps) => {
                         project={project}
                         task={task}
                         roles={roles}
+                        project_status={project_status}
+                        sprints={sprints}
+                        updateTask={updateTask}
                       />
                     ))}
               </div>

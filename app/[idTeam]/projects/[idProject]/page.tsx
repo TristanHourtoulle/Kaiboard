@@ -23,6 +23,7 @@ export default function PageHome({
     updateSprint,
     fetchTasks,
     createTask,
+    updateTask,
     fetchProjectStatus,
   } = useProject(idTeam);
   const { roles, fetchTeamRoles } = useTeamRole(idTeam);
@@ -59,6 +60,12 @@ export default function PageHome({
     );
   };
 
+  const handleUpdateTask = async (id_task: string, task: any) => {
+    await updateTask(id_task, task);
+
+    fetchTasks(idProject);
+  };
+
   const projectTabs = [
     {
       title: "Overview",
@@ -77,6 +84,7 @@ export default function PageHome({
           tasks={tasks}
           fetchTasks={fetchTasks}
           createTask={createTask}
+          updateTask={handleUpdateTask}
         />
       ),
       icon: "🎯",

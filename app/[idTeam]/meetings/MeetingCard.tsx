@@ -81,7 +81,7 @@ export type MeetingCardProps = {
     title: string;
     description: string;
     team_id: string;
-    link: string;
+    link?: string;
   };
   shedule: string[];
   onMeetingDeleted: () => void;
@@ -181,7 +181,7 @@ export const MeetingCard = (props: MeetingCardProps) => {
   };
 
   return (
-    <Card className="flex flex-col bg-background w-full max-w-sm">
+    <Card className="flex flex-col bg-sidebar w-full max-w-sm">
       <CardHeader className="w-full">
         <div className="flex flex-col items-start gap-0">
           <CardTitle className="text-lg pb-0 mb-0">{title}</CardTitle>
@@ -234,7 +234,7 @@ export const MeetingCard = (props: MeetingCardProps) => {
         </div>
         <PreviewDateTime dateTime={date_time} savedZones={savedZone} />
       </CardContent>
-      <CardFooter className="flex justify-between w-full">
+      <CardFooter className="flex justify-between w-full gap-2">
         <Button
           onClick={async () => {
             await deleteTeamMeeting(id);

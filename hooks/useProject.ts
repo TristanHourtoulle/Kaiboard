@@ -433,6 +433,21 @@ export function useProject(idTeam: string) {
     }
   };
 
+  // Delete a task
+  const deleteTask = async (taskId: string) => {
+    try {
+      const { error } = await supabase
+        .from("project_tasks")
+        .delete()
+        .eq("id", taskId);
+
+      if (error) throw error;
+    } catch (error: any) {
+      console.error("Error deleting task:", error.message);
+      throw error;
+    }
+  };
+
   // Get all tasks from all projects from a team that are assigned to a specific profileId (uuid)
   const fetchTasksByProfileId = async (profileId: string) => {
     try {
@@ -506,6 +521,7 @@ export function useProject(idTeam: string) {
     fetchTasks,
     createTask,
     updateTask,
+    deleteTask,
     // Status
     fetchProjectStatus,
   };

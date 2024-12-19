@@ -311,6 +311,58 @@ export function useProject(idTeam: string) {
     }
   };
 
+  // Get all tasks from all projects from a team that are assigned to a specific profileId (uuid)
+  const fetchTasksByProfileId = async (profileId: string) => {
+    try {
+      const { data: tasks, error } = await supabase
+        .from("project_task_users")
+        .select(
+          `
+          project_tasks!project_task_users_task_id_fkey(
+            *,
+            project_sprints(*),
+            project_task_roles!project_task_roles_task_id_fkey(*),
+            project_status(*),
+            project_task_users!project_task_users_task_id_fkey(
+              profiles(*)
+            )
+          )
+          `
+        )
+        .eq("profile_id", profileId);
+
+      if (error) throw error;
+
+      // Formatter les tâches pour correspondre à l'interface Task
+      const formattedTasks: Task[] = tasks.map((taskRelation: any) => {
+        const task = taskRelation.project_tasks;
+        const profiles = task.project_task_users.map(
+          (relation: any) => relation.profiles
+        ); // Extraire tous les profils liés à la tâche
+
+        return {
+          id: task.id,
+          created_at: task.created_at,
+          title: task.title,
+          content: task.content,
+          status: task.project_status,
+          sprint: task.project_sprints,
+          profiles: profiles, // Inclure tous les profils liés
+          roles: task.project_task_roles,
+          project_id: task.project_id,
+          team_id: task.team_id,
+        };
+      });
+
+      setTasks(formattedTasks);
+      return formattedTasks; // Retourner les tâches formatées
+    } catch (err: any) {
+      console.error("Error fetching tasks by profileId:", err.message);
+      setError(err.message);
+      return []; // Retourner un tableau vide en cas d'erreur
+    }
+  };
+
   return {
     // Variables
     projects,
@@ -328,6 +380,7 @@ export function useProject(idTeam: string) {
     deleteSprint,
     updateSprint,
     // Tasks
+    fetchTasksByProfileId,
     fetchTasks,
     createTask,
     // Status

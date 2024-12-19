@@ -45,6 +45,7 @@ export type TaskCardProps = {
   project_status: any[];
   sprints: any[];
   updateTask: (id_task: string, data: any) => void;
+  deleteTask: (id_task: string) => void;
 };
 
 const formSchema = z.object({
@@ -70,7 +71,15 @@ const formSchema = z.object({
 });
 
 export const TaskCard = (props: TaskCardProps) => {
-  const { project, task, roles, project_status, sprints, updateTask } = props;
+  const {
+    project,
+    task,
+    roles,
+    project_status,
+    sprints,
+    updateTask,
+    deleteTask,
+  } = props;
   const { profilesList, getListProfiles } = useProfile();
   const [taskRoles, setTaskRoles] = useState<any[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
@@ -81,9 +90,9 @@ export const TaskCard = (props: TaskCardProps) => {
       title: task.title,
       content: task.content,
       status: task.status.id.toString(),
-      sprint: task.sprint.id.toString(),
+      sprint: { id: task.sprint.id },
       profiles: task.profiles.map((profile: any) => profile.profile_id),
-      roles: task.roles.map((role: any) => role.role_id),
+      roles: task.roles.map((role: any) => ({ id: role.role_id })), // Convertir les IDs en objets
     },
   });
 
@@ -380,7 +389,14 @@ export const TaskCard = (props: TaskCardProps) => {
                   Cancel
                 </Button>
               </DialogClose>
-              <Button className="mr-auto" variant={"destructive"}>
+              <Button
+                className="mr-auto"
+                variant={"destructive"}
+                onClick={() => {
+                  deleteTask(task.id);
+                  setIsDialogOpen(false);
+                }}
+              >
                 Delete
               </Button>
               <Button

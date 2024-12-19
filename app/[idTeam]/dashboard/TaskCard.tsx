@@ -52,7 +52,7 @@ export const TaskCard = (props: TaskCardProps) => {
   return (
     <div
       key={task.id}
-      className="cursour-pointer transition-all flex flex-col gap-3 w-full bg-sidebar border border-border rounded-sm p-2"
+      className="cursour-pointer transition-all flex flex-col gap-3 w-full bg-sidebar border border-border rounded-sm p-4"
     >
       {/* Header */}
       <div className="flex items-center justify-between w-full">
@@ -81,16 +81,14 @@ export const TaskCard = (props: TaskCardProps) => {
       <div className="w-full flex flex-col gap-1 items-start">
         {/* Roles */}
         <div className="flex flex-wrap items-center gap-1">
-          {taskRoles.map((role) => (
-            <RoleBadge key={role.id} title={role.title} color={role.color} />
-          ))}
-        </div>
-        <div>
           <SprintBadge
             title={task.sprint.title}
             color={"#A7A7A7"}
             icon={<IterationCcw className="w-4 h-4" />}
           />
+          {taskRoles.map((role) => (
+            <RoleBadge key={role.id} title={role.title} color={role.color} />
+          ))}
         </div>
       </div>
     </div>

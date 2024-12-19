@@ -55,6 +55,8 @@ export function useProject(idTeam: string) {
         .select("*, project_sprints(*)") // Récupération des projets et leurs sprints associés
         .eq("team_id", teamId);
 
+      console.log("Response from supabase", projectsData, error);
+
       if (error) throw error;
 
       setProjects(projectsData || []);
@@ -65,6 +67,7 @@ export function useProject(idTeam: string) {
         sprintMap[project.id] = project.project_sprints || [];
       });
       setSprints(sprintMap);
+      return projectsData;
     } catch (err: any) {
       setError(err.message);
     } finally {

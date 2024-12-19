@@ -18,8 +18,6 @@ export const TaskCard = (props: TaskCardProps) => {
   const { profilesList, getListProfiles } = useProfile();
   const [taskRoles, setTaskRoles] = useState<any[]>([]);
 
-  console.log("task", task);
-
   const fetchTaskRoles = async () => {
     if (task.roles && task.roles.length > 0) {
       // Extraire les role_id depuis task.roles
@@ -30,7 +28,6 @@ export const TaskCard = (props: TaskCardProps) => {
 
       setTaskRoles(taskRoles);
     } else {
-      console.log("task.roles is empty or undefined", task.roles);
     }
   };
 

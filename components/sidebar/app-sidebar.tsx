@@ -1,6 +1,11 @@
 "use client";
 
 import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
@@ -11,12 +16,17 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubItem,
   SidebarSeparator,
 } from "@/components/ui/sidebar";
+import { useProfile } from "@/hooks/useProfile";
+import { useProject } from "@/hooks/useProject";
 import { useTeam } from "@/hooks/useTeam";
 import { useUser } from "@/hooks/useUser";
 import {
   Calendar,
+  ChevronDown,
   ClipboardList,
   Cog,
   Command,
@@ -67,11 +77,14 @@ const Teams = [
 
 export function AppSidebar() {
   const { user, loading } = useUser();
+  const { profile, getProfile } = useProfile();
+  const { projects, fetchProjects } = useProject("-1");
   const router = useRouter();
   const { createTeam, getUserTeams } = useTeam();
   const [teams, setTeams] = useState<any[]>(Teams);
   const [selectedTeam, setSelectedTeam] = useState<any>(Teams[0]);
   const [links, setLinks] = useState(PersonnalLinks);
+  const [isCollapsibleOpen, setIsCollapsibleOpen] = useState<boolean>(false);
 
   function updateLinks() {
     if (selectedTeam && selectedTeam.team_id === -1) {
@@ -111,8 +124,21 @@ export function AppSidebar() {
   useEffect(() => {
     if (user && user.id) {
       fetchUserTeams();
+      getProfile(user.id);
     }
   }, [user]);
+
+  // When profile is fetched, fetch projects
+  useEffect(() => {
+    if (selectedTeam && selectedTeam.team_id !== "-1") {
+      fetchProjects(selectedTeam.team_id);
+    }
+  }, [selectedTeam]);
+
+  // When projects are fetched, console.log them
+  useEffect(() => {
+    console.log("Projects", projects);
+  }, [projects]);
 
   return (
     <Sidebar collapsible="icon">
@@ -133,16 +159,67 @@ export function AppSidebar() {
           <SidebarGroupLabel>Plateform</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {links.map(({ href, label, Icon }) => (
-                <SidebarMenuItem key={href}>
-                  <SidebarMenuButton asChild>
-                    <Link href={href}>
-                      <Icon />
-                      <span>{label}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {links.map(({ href, label, Icon }) => {
+                if (label === "Projects") {
+                  return (
+                    <SidebarMenuItem key="projects-dropdown">
+                      <Collapsible
+                        defaultOpen={false}
+                        onOpenChange={setIsCollapsibleOpen}
+                        className="group/collapsible"
+                      >
+                        <CollapsibleTrigger asChild>
+                          <SidebarMenuButton className="w-full flex items-center">
+                            <Icon />
+                            <span>{label}</span>
+                            <ChevronDown
+                              className={`ml-auto transition-all ${
+                                isCollapsibleOpen ? "rotate-40" : "-rotate-90"
+                              }`}
+                            />
+                          </SidebarMenuButton>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="transition-all">
+                          <SidebarMenuSub className="flex flex-col items-start gap-2">
+                            {/* Lien vers tous les projets */}
+                            <SidebarMenuSubItem>
+                              <Link
+                                href={`/${selectedTeam.team_id}/projects`}
+                                className="cursor-pointer transition-all opacity-75 hover:opacity-100 font-light"
+                              >
+                                Tous les projets
+                              </Link>
+                            </SidebarMenuSubItem>
+                            {/* Un lien pour chaque projet */}
+                            {projects.map((project: any) => (
+                              <SidebarMenuSubItem key={project.id}>
+                                <Link
+                                  href={`/${selectedTeam.team_id}/projects/${project.id}`}
+                                  className="cursor-pointer transition-all opacity-75 hover:opacity-100 font-light"
+                                >
+                                  {project.title}
+                                </Link>
+                              </SidebarMenuSubItem>
+                            ))}
+                          </SidebarMenuSub>
+                        </CollapsibleContent>
+                      </Collapsible>
+                    </SidebarMenuItem>
+                  );
+                }
+
+                // Comportement par défaut pour les autres éléments
+                return (
+                  <SidebarMenuItem key={href}>
+                    <SidebarMenuButton asChild>
+                      <Link href={href}>
+                        <Icon />
+                        <span>{label}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

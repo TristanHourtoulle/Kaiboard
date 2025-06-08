@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     url: '/teams',
     images: [
       {
-        url: '/screen/Kaiboard-cover.jpeg',
+        url: '/assets/screenshots/Kaiboard-cover.jpeg',
         width: 1200,
         height: 630,
         alt: 'Kaiboard Teams - Distributed Team Collaboration',

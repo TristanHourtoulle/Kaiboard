@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     url: '/meetings',
     images: [
       {
-        url: '/screen/Kaiboard-cover.jpeg',
+        url: '/assets/screenshots/Kaiboard-cover.jpeg',
         width: 1200,
         height: 630,
         alt: 'Kaiboard Meetings - Team Meeting Management',

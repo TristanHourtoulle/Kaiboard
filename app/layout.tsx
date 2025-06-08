@@ -67,7 +67,7 @@ export const metadata: Metadata = {
     siteName: "Kaiboard",
     images: [
       {
-        url: "/screen/Kaiboard-cover.jpeg",
+        url: "/assets/screenshots/Kaiboard-cover.jpeg",
         width: 1200,
         height: 630,
         alt: "Kaiboard - Project Management for Distributed Teams",
@@ -79,7 +79,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Kaiboard - Project Management for Distributed Teams",
     description: "Schedule meetings across timezones with ease. Collaborate seamlessly with your global team.",
-    images: ["/screen/Kaiboard-cover.jpeg"],
+    images: ["/assets/screenshots/Kaiboard-cover.jpeg"],
     creator: "@kaiboard",
     site: "@kaiboard",
   },

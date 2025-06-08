@@ -44,7 +44,7 @@ export default function manifest(): MetadataRoute.Manifest {
     ],
     screenshots: [
       {
-        src: '/screen/Kaiboard-cover.jpeg',
+        src: '/assets/screenshots/Kaiboard-cover.jpeg',
         sizes: '1200x630',
         type: 'image/jpeg',
         form_factor: 'wide'

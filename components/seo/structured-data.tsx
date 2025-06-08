@@ -40,7 +40,7 @@ export function StructuredData({ type = 'website', data = {} }: StructuredDataPr
           operatingSystem: 'Any',
           description: 'Project Management for Distributed Teams - Schedule meetings across timezones with ease. Collaborate seamlessly with your global team.',
           url: baseUrl,
-          screenshot: `${baseUrl}/screen/Kaiboard-cover.jpeg`,
+          screenshot: `${baseUrl}/assets/screenshots/Kaiboard-cover.jpeg`,
           offers: {
             '@type': 'Offer',
             price: '0',

@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -15,18 +9,26 @@ datasource db {
 }
 
 model User {
-  id            String          @id @default(cuid())
-  name          String?
-  email         String          @unique
-  emailVerified DateTime?
-  image         String?
-  accounts      Account[]
-  sessions      Session[]
-  // Optional for WebAuthn support
-  Authenticator Authenticator[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                  String               @id @default(cuid())
+  name                String?
+  email               String               @unique
+  emailVerified       DateTime?
+  image               String?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  lastActiveAt        DateTime?            // Track when user was last active
+  role                UserRole             @default(MEMBER)
+  timezone            String?              @default("UTC")
+  country             String?
+  accounts            Account[]
+  Authenticator       Authenticator[]
+  createdMeetings     Meeting[]            @relation("MeetingCreator")
+  meetingParticipants MeetingParticipant[]
+  sessions            Session[]
+  teams               TeamMember[]
+  requestLogs         RequestLog[]
+  createdNotes        MeetingNotes[]       @relation("MeetingNotesCreator")
+  lastEditedNotes     MeetingNotes[]       @relation("MeetingNotesLastEditor")
 }
 
 model Account {
@@ -41,11 +43,9 @@ model Account {
   scope             String?
   id_token          String?
   session_state     String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([provider, providerAccountId])
 }
@@ -54,10 +54,9 @@ model Session {
   sessionToken String   @unique
   userId       String
   expires      DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }
 
 model VerificationToken {
@@ -68,7 +67,6 @@ model VerificationToken {
   @@id([identifier, token])
 }
 
-// Optional for WebAuthn support
 model Authenticator {
   credentialID         String  @unique
   userId               String
@@ -78,8 +76,148 @@ model Authenticator {
   credentialDeviceType String
   credentialBackedUp   Boolean
   transports           String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user                 User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([userId, credentialID])
+}
+
+model Team {
+  id          String       @id @default(cuid())
+  name        String
+  description String?
+  image       String?      // Team profile picture
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  meetings    Meeting[]
+  members     TeamMember[]
+  roles       TeamRole[]   // Custom roles for this team
+}
+
+model TeamRole {
+  id          String                @id @default(cuid())
+  name        String                // e.g., "Frontend", "Backend", "DevOps"
+  color       String                // Hex color code
+  teamId      String
+  createdAt   DateTime              @default(now())
+  team        Team                  @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  memberRoles TeamMemberCustomRole[] // Many-to-many relationship
+  
+  @@unique([name, teamId]) // Unique role names per team
+}
+
+model TeamMember {
+  id          String                 @id @default(cuid())
+  userId      String
+  teamId      String
+  role        MemberRole             @default(MEMBER)
+  joinedAt    DateTime               @default(now())
+  team        Team                   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user        User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  customRoles TeamMemberCustomRole[] // Many-to-many relationship
+
+  @@unique([userId, teamId])
+}
+
+model TeamMemberCustomRole {
+  id           String     @id @default(cuid())
+  teamMemberId String
+  teamRoleId   String
+  assignedAt   DateTime   @default(now())
+  teamMember   TeamMember @relation(fields: [teamMemberId], references: [id], onDelete: Cascade)
+  teamRole     TeamRole   @relation(fields: [teamRoleId], references: [id], onDelete: Cascade)
+
+  @@unique([teamMemberId, teamRoleId])
+}
+
+model Meeting {
+  id             String               @id @default(cuid())
+  title          String
+  description    String?
+  startTime      DateTime
+  endTime        DateTime
+  timezone       String               @default("UTC")
+  meetingLink    String?
+  location       String?
+  agenda         String?
+  teamId         String?
+  creatorId      String
+  googleEventId  String?
+  outlookEventId String?
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+  creator        User                 @relation("MeetingCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+  team           Team?                @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  participants   MeetingParticipant[]
+  notes          MeetingNotes[]
+}
+
+model MeetingParticipant {
+  id          String            @id @default(cuid())
+  userId      String
+  meetingId   String
+  status      ParticipantStatus @default(PENDING)
+  respondedAt DateTime?
+  createdAt   DateTime          @default(now())
+  meeting     Meeting           @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, meetingId])
+}
+
+model MeetingNotes {
+  id         String   @id @default(cuid())
+  meetingId  String
+  content    String   // Rich text content in HTML format
+  createdBy  String   // User who originally created the notes
+  lastSavedBy String  // User who last saved/updated the notes
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  meeting    Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  creator    User     @relation("MeetingNotesCreator", fields: [createdBy], references: [id], onDelete: Cascade)
+  lastEditor User     @relation("MeetingNotesLastEditor", fields: [lastSavedBy], references: [id], onDelete: Cascade)
+
+  @@unique([meetingId]) // Only one notes document per meeting
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  MEMBER
+}
+
+enum MemberRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+model RequestLog {
+  id            String   @id @default(cuid())
+  method        String   // GET, POST, PUT, DELETE, etc.
+  url           String   // Full URL path
+  path          String   // Clean path without query params
+  statusCode    Int?     // HTTP response status
+  responseTime  Int?     // Response time in milliseconds
+  userAgent     String?  // User agent string
+  ipAddress     String?  // Client IP address
+  userId        String?  // Authenticated user ID if any
+  requestBody   String?  // Request body (sanitized)
+  queryParams   String?  // Query parameters as JSON string
+  headers       String?  // Important headers as JSON string
+  errorMessage  String?  // Error message if request failed
+  timestamp     DateTime @default(now())
+  user          User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([timestamp])
+  @@index([userId])
+  @@index([method])
+  @@index([statusCode])
+  @@index([path])
+}
+
+enum ParticipantStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  MAYBE
 }

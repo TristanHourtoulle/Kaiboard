@@ -29,7 +29,7 @@ export function Breadcrumbs({ items, className = '' }: BreadcrumbsProps) {
         className={`flex items-center space-x-1 text-sm text-muted-foreground ${className}`}
       >
         {allItems.map((item, index) => (
-          <div key={item.url} className="flex items-center">
+          <div key={`${item.url}-${index}`} className="flex items-center">
             {index > 0 && (
               <ChevronRight className="w-4 h-4 mx-1 flex-shrink-0" />
             )}

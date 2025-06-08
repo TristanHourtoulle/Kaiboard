@@ -193,7 +193,7 @@ export function DashboardClient({ session, users }: DashboardClientProps) {
                 variant="ghost" 
                 size="lg" 
                 className="w-full sm:w-auto focus-ring hover:bg-destructive/10 hover:text-destructive transition-all duration-300 min-h-[44px]"
-                onClick={() => signOut()}
+                onClick={() => signOut({ callbackUrl: "/" })}
               >
                 <LogOut className="w-4 h-4 mr-2" />
                 Sign Out

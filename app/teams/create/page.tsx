@@ -6,7 +6,7 @@ export default async function CreateTeamPage() {
   const session = await auth();
   
   if (!session?.user?.id) {
-    redirect("/auth/signin");
+    redirect("/");
   }
 
   return (

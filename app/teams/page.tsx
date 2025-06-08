@@ -1,13 +1,51 @@
+import { Metadata } from 'next';
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { TeamsClient } from "@/components/teams/teams-client";
 
+export const metadata: Metadata = {
+  title: 'Teams - Collaborate with Your Distributed Team',
+  description: 'Create and manage teams for your distributed organization. Invite members, assign roles, and collaborate effectively across timezones.',
+  keywords: [
+    'teams',
+    'team collaboration',
+    'distributed teams',
+    'remote teams',
+    'team management',
+    'team members',
+    'collaboration',
+    'team roles',
+    'project teams',
+    'team workspace'
+  ],
+  openGraph: {
+    title: 'Teams - Collaborate with Your Distributed Team | Kaiboard',
+    description: 'Create and manage teams for your distributed organization. Invite members, assign roles, and collaborate effectively across timezones.',
+    url: '/teams',
+    images: [
+      {
+        url: '/screen/Kaiboard-cover.jpeg',
+        width: 1200,
+        height: 630,
+        alt: 'Kaiboard Teams - Distributed Team Collaboration',
+      },
+    ],
+  },
+  twitter: {
+    title: 'Teams - Collaborate with Your Distributed Team | Kaiboard',
+    description: 'Create and manage teams for your distributed organization.',
+  },
+  alternates: {
+    canonical: '/teams',
+  },
+};
+
 export default async function TeamsPage() {
   const session = await auth();
   
   if (!session?.user?.id) {
-    redirect("/auth/signin");
+    redirect("/");
   }
 
   // Get all teams where user is a member

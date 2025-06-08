@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { DashboardClient } from "@/components/dashboard/dashboard-client";
 import { Badge } from "@/components/ui/badge";
 import { Globe, Users, Clock, Zap, Star, Shield, Rocket, Heart } from "lucide-react";
+import { StructuredData } from "@/components/seo/structured-data";
 
 export default async function Home() {
   const session = await auth();
@@ -13,6 +14,10 @@ export default async function Home() {
 
   return (
     <>
+      <StructuredData type="website" />
+      <StructuredData type="organization" />
+      <StructuredData type="softwareApplication" />
+      
       {session?.user ? (
         // Authenticated user view
         <DashboardClient session={session} users={users} />

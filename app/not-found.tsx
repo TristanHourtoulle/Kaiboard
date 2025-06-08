@@ -16,7 +16,20 @@ import {
 
 export const metadata: Metadata = {
   title: '404 - Page Not Found | Kaiboard',
-  description: 'The page you are looking for could not be found. Return to the Kaiboard dashboard to continue managing your projects.',
+  description: 'The page you are looking for could not be found. Return to the Kaiboard dashboard to continue managing your distributed team projects and meetings.',
+  robots: {
+    index: false,
+    follow: true,
+  },
+  openGraph: {
+    title: '404 - Page Not Found | Kaiboard',
+    description: 'The page you are looking for could not be found. Return to Kaiboard to continue collaborating with your team.',
+    type: 'website',
+  },
+  twitter: {
+    title: '404 - Page Not Found | Kaiboard',
+    description: 'Page not found. Return to Kaiboard dashboard.',
+  },
 };
 
 export default function NotFound() {

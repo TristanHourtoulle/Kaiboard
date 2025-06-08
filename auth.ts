@@ -15,6 +15,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       clientSecret: process.env.GITHUB_CLIENT_SECRET!,
     }),
   ],
+  pages: {
+    signIn: "/", // Redirect to homepage/dashboard which handles auth logic
+  },
   session: {
     strategy: "jwt", // Use JWT instead of database sessions for Edge Runtime
   },

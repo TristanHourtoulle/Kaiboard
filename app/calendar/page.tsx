@@ -1,7 +1,43 @@
 import { Suspense } from 'react';
+import { Metadata } from 'next';
 import { CalendarClient } from '@/components/calendar/calendar-client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+
+export const metadata: Metadata = {
+  title: 'Calendar - Schedule Meetings Across Timezones',
+  description: 'View and manage your meetings in a smart calendar that automatically handles timezone conflicts and suggests optimal meeting times for your distributed team.',
+  keywords: [
+    'calendar',
+    'meeting scheduler',
+    'timezone calendar',
+    'team calendar',
+    'distributed team meetings',
+    'global scheduling',
+    'meeting planner',
+    'productivity calendar'
+  ],
+  openGraph: {
+    title: 'Calendar - Schedule Meetings Across Timezones | Kaiboard',
+    description: 'View and manage your meetings in a smart calendar that automatically handles timezone conflicts and suggests optimal meeting times.',
+    url: '/calendar',
+    images: [
+      {
+        url: '/assets/screenshots/Kaiboard-cover.jpeg',
+        width: 1200,
+        height: 630,
+        alt: 'Kaiboard Calendar - Smart Meeting Scheduling',
+      },
+    ],
+  },
+  twitter: {
+    title: 'Calendar - Schedule Meetings Across Timezones | Kaiboard',
+    description: 'View and manage your meetings in a smart calendar that automatically handles timezone conflicts.',
+  },
+  alternates: {
+    canonical: '/calendar',
+  },
+};
 
 function CalendarSkeleton() {
   return (

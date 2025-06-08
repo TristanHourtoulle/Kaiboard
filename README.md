@@ -126,14 +126,40 @@ Kaiboard is a modern, feature-rich team collaboration platform designed to strea
 
 ## 📱 **Screenshots**
 
+### 🏠 **Dashboard Overview**
 <div align="center">
-  <img src="./docs/screenshots/dashboard.png" alt="Dashboard" width="600" />
-  <p><em>Modern dashboard with real-time analytics and team overview</em></p>
-  
-  <br />
-  
-  <img src="./docs/screenshots/meetings.png" alt="Meetings" width="600" />
-  <p><em>Comprehensive meeting management with rich text notes</em></p>
+  <img src="./docs/screenshots/Kaiboard-dashboard.png" alt="Kaiboard Dashboard" width="800" />
+  <p><em>Smart dashboard with real-time analytics, team overview, and quick action buttons</em></p>
+</div>
+
+### 📅 **Calendar & Scheduling**
+<div align="center">
+  <img src="./docs/screenshots/Kaiboard-calendar.png" alt="Kaiboard Calendar" width="800" />
+  <p><em>Intuitive calendar view with timezone-aware meeting scheduling</em></p>
+</div>
+
+### 📝 **Meeting Management**
+<div align="center">
+  <img src="./docs/screenshots/Kaiboard-meetings.png" alt="Kaiboard Meetings" width="800" />
+  <p><em>Comprehensive meeting management with rich text notes and participant tracking</em></p>
+</div>
+
+### 💬 **Live Meeting Interface**
+<div align="center">
+  <img src="./docs/screenshots/Kaiboard-open-meeting.png" alt="Kaiboard Open Meeting" width="800" />
+  <p><em>Rich meeting interface with TipTap editor, participant management, and real-time collaboration</em></p>
+</div>
+
+### 👥 **Team Collaboration**
+<div align="center">
+  <img src="./docs/screenshots/Kaiboard-team.png" alt="Kaiboard Team Management" width="800" />
+  <p><em>Advanced team management with role-based access control and member analytics</em></p>
+</div>
+
+### 🎨 **Modern Landing Page**
+<div align="center">
+  <img src="./docs/screenshots/Kaiboard-cover.jpeg" alt="Kaiboard Landing Page" width="800" />
+  <p><em>Beautiful, responsive landing page with GitHub authentication and modern design</em></p>
 </div>
 
 ---

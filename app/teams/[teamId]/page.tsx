@@ -8,7 +8,7 @@ export default async function TeamPage({ params }: { params: Promise<{ teamId: s
   const session = await auth();
   
   if (!session?.user?.id) {
-    redirect("/auth/signin");
+    redirect("/");
   }
 
   const team = await prisma.team.findFirst({

@@ -1,39 +1,55 @@
-import { createMiddlewareClient } from "@supabase/auth-helpers-nextjs";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@/auth';
 
-export async function middleware(req: NextRequest) {
-  const res = NextResponse.next();
-
-  // Crée une instance du middleware client Supabase
-  const supabase = createMiddlewareClient({ req, res });
-
-  // Récupère la session de l'utilisateur
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  const { pathname } = req.nextUrl;
-
-  // **1. Exclure les routes publiques**
-  if (pathname.startsWith("/login") || pathname.startsWith("/signup")) {
-    return res; // Ne pas vérifier la session sur ces routes
+export async function middleware(request: NextRequest) {
+  // Skip middleware processing for static files and Next.js internals
+  const skipPaths = [
+    '/_next/',
+    '/favicon.ico',
+    '/robots.txt',
+    '/sitemap.xml',
+    '/.well-known/',
+    '/api/auth/providers',
+    '/api/auth/session',
+    '/api/auth/csrf',
+    '/manifest.json'
+  ];
+  
+  const shouldSkip = skipPaths.some(path => request.nextUrl.pathname.startsWith(path));
+  
+  if (shouldSkip) {
+    return NextResponse.next();
   }
 
-  // **2. Si la session est absente, rediriger vers /login**
-  if (!session) {
-    const redirectUrl = new URL("/login", req.url);
-    redirectUrl.searchParams.set("redirectedFrom", pathname); // Ajouter un paramètre pour la redirection
-    return NextResponse.redirect(redirectUrl);
+  try {
+    // Get user session for auth context
+    const session = await auth();
+    
+    // Continue with the request
+    const response = NextResponse.next();
+    
+    // Add request metadata to headers for potential logging by API routes
+    if (session?.user?.id) {
+      response.headers.set('x-user-id', session.user.id);
+    }
+    response.headers.set('x-request-start-time', Date.now().toString());
+    
+    return response;
+  } catch (error) {
+    console.error('Middleware error:', error);
+    return NextResponse.next();
   }
-
-  // **3. Retourner la réponse par défaut si l'utilisateur est authentifié**
-  return res;
 }
 
-// **4. Matcher les routes protégées uniquement**
 export const config = {
   matcher: [
-    // Protège toutes les routes sauf les statiques, API et publiques
-    "/((?!api|_next/static|_next/image|favicon.ico|login|signup).*)",
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api (API routes - we'll handle these separately)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     */
+    '/((?!api|_next/static|_next/image|favicon.ico).*)',
   ],
 };
